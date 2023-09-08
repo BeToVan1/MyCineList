@@ -23,14 +23,30 @@ form.addEventListener('submit', function (event) {
             .then(response => response.json())
             .then(data => {
                 // Handle the API response data here
-                console.log(data);
-
                 const searchResults = data;
                 //window.location.href = `/search-results.html?results=${searchResults}`;
                 console.log(searchResults);
+                $("#hero").hide();
+                $("#search-results-section").show();
+                var numofResults = searchResults.results.length;
                 $(".search-result").each(function(i){
-                    var h3 = $(this).find("h3");
-                    h3.text(searchResults.results[i].title);
+                    if(i < numofResults){
+                        var h3 = $(this).find("h3");
+                        var p = $(this).find("p");
+                        var img = $(this).find("img");
+                        var new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + searchResults.results[i].poster_path;
+                    
+
+                        h3.text(searchResults.results[i].title);
+                        p.text(searchResults.results[i].overview);
+                        img.attr("src", new_image);
+                        img.attr("width", 200);
+                        img.attr("height",300);
+                    }
+                    else{
+                        $(this).hide();
+                        $("#load-more").hide();
+                    }
                 });
             })
             .catch(error => {
