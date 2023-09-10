@@ -59,30 +59,36 @@ form.addEventListener('submit', function (event) {
     }
 });
 
+//loads past initial 5
 function loadMore(){
     var numResults = searchData.results.length;
     if(loaded === false){
         for(var i = 5; i < numResults; i++){
-            const new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + searchData.results[i].poster_path;
-            const resultHtml = `
-                <div class="well search-result text-bg-dark">
-                <div class="row">
-                    <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2"> <img class="img-responsive"
-                        src="${new_image}" alt=""></div>
-                    <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10 title">
-                        <h3>"${searchData.results[i].title}"</h3>
-                        <p>"${searchData.results[i].overview}"</p>
+            var poster = searchData.results[i].poster_path;
+            //some movies dont have posters
+            if(poster != null){
+                const new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + poster;
+                const resultHtml = `
+                    <div class="well search-result text-bg-dark">
+                    <div class="row">
+                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2"> <img class="img-responsive"
+                            src="${new_image}" alt=""></div>
+                        <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10 title">
+                            <h3>"${searchData.results[i].title}"</h3>
+                            <p>"${searchData.results[i].overview}"</p>
+                        </div>
                     </div>
-                </div>
-                </div>
-            `;
+                    </div>
+                `;
 
-            $("#search-results-section").append(resultHtml);
+                $("#search-results-section").append(resultHtml);
+            }
         }
         loaded = true;
     }
 }
 
+//when scrolling to the bottom of the page, loads more
 function onScroll() {
     const scrollPosition = $(window).scrollTop();
     const documentHeight = $(document).height();
