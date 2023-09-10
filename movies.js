@@ -4,7 +4,10 @@ var apiRAT = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMTE5MzkyZDJjNDRlNWYzYjI3MGY1YWRlN
 const form = document.getElementById('movie-search-form');
 const searchInput = document.getElementById('search-input');
 
-//search for movies
+
+var searchData;
+var loaded = false;
+//search for movies and load initial 5
 form.addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
     const searchTerm = searchInput.value.trim();
@@ -24,11 +27,13 @@ form.addEventListener('submit', function (event) {
             .then(data => {
                 // Handle the API response data here
                 const searchResults = data;
+                searchData = data;
                 //window.location.href = `/search-results.html?results=${searchResults}`;
                 console.log(searchResults);
                 $("#hero").hide();
                 $("#search-results-section").show();
                 var numofResults = searchResults.results.length;
+                
                 $(".search-result").each(function(i){
                     if(i < numofResults){
                         var h3 = $(this).find("h3");
@@ -36,7 +41,6 @@ form.addEventListener('submit', function (event) {
                         var img = $(this).find("img");
                         var new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + searchResults.results[i].poster_path;
                     
-
                         h3.text(searchResults.results[i].title);
                         p.text(searchResults.results[i].overview);
                         img.attr("src", new_image);
@@ -54,3 +58,38 @@ form.addEventListener('submit', function (event) {
             });
     }
 });
+
+function loadMore(){
+    var numResults = searchData.results.length;
+    if(loaded === false){
+        for(var i = 5; i < numResults; i++){
+            const new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + searchData.results[i].poster_path;
+            const resultHtml = `
+                <div class="well search-result text-bg-dark">
+                <div class="row">
+                    <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2"> <img class="img-responsive"
+                        src="${new_image}" alt=""></div>
+                    <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10 title">
+                        <h3>"${searchData.results[i].title}"</h3>
+                        <p>"${searchData.results[i].overview}"</p>
+                    </div>
+                </div>
+                </div>
+            `;
+
+            $("#search-results-section").append(resultHtml);
+        }
+        loaded = true;
+    }
+}
+
+function onScroll() {
+    const scrollPosition = $(window).scrollTop();
+    const documentHeight = $(document).height();
+    const windowHeight = $(window).height();
+
+    if (scrollPosition + windowHeight >= documentHeight - 100) {
+        loadMore();
+    }
+}
+$(window).on("scroll", onScroll);
