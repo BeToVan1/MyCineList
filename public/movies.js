@@ -1,6 +1,3 @@
-var apiKey = "a119392d2c44e5f3b270f5ade5ac221d";
-var apiRAT = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMTE5MzkyZDJjNDRlNWYzYjI3MGY1YWRlNWFjMjIxZCIsInN1YiI6IjY0ZmFkYWM2ZmZjOWRlMDEzOGViYWZhZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.CXi3K75a6AwYUhEm8yG_QtO2colywujc7Mi3MymUozw"
-
 const form = document.getElementById('movie-search-form');
 const searchInput = document.getElementById('search-input');
 

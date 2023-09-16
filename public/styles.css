@@ -24,6 +24,6 @@
 }
 
 .well p {
-    margin: 0; /* Remove default margin for p */
+    margin: 0; 
     margin-right: 30px;
 }
