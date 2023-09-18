@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="../styles.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
 </head>
 
 <body class = "text-bg-secondary">
@@ -37,8 +35,7 @@
         </form>
 
         <div class="text-end">
-          <a class="btn btn-dark btn-lg" href="/login" role ="button">Login</a>
-          <a class="btn btn-dark btn-lg" href="/register" role ="button">Sign-up</a>
+          <a class="btn btn-dark btn-lg" href="/MyList" role ="button">My List</a>
         </div>
       </div>
     </div>
@@ -48,10 +45,8 @@
   <!-- hero -->
   <div id="hero" class="px-4 py-5 my-5 text-center">
     <!--<img class="d-block mx-auto mb-4" src="/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> -->
-    <h1 class="display-5 fw-bold text-body-emphasis">Welcome to MyCineList</h1>
+    <h1 class="display-5 fw-bold text-body-emphasis">My List</h1>
     <div class="col-lg-6 mx-auto ">
-      <p class="lead mb-4">Create your movie lists, rate films you've watched, and find your next cinematic adventure.
-        Dive into a world of movies, all in one place.</p>
       <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
       </div>
     </div>
@@ -66,22 +61,11 @@
     <div class="well search-result text-bg-dark">
       <div class="row">
           <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2"> <img class="img-responsive"
-              src="https://www.bootdey.com/image/600x900/7B68EE/000000" alt=""></div>
+              src="https://www.bootdey.com/image/400x200/7B68EE/000000" alt=""></div>
           <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10 title">
             <h3>Result name one</h3>
             <p>Ut quis libero id orci semper porta ac vel ante. In nec laoreet sapien. Nunc hendrerit
               ligula at massa sodales, ullamcorper rutrum orci semper.</p>
-              <input type = "hidden" id = movie_id value="">
-              <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Dropdown button
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
-                  <a class="dropdown-item" href="#">Something else here</a>
-                </div>
-              </div>
           </div>
         </div>
     </div>
@@ -94,17 +78,6 @@
             <p>Nulla rhoncus lacus tortor, vel tincidunt dolor eleifend et. Ut consequat elit quam,
               iaculis volutpat ipsum fermentum pulvinar. Pellentesque nec sem vel arcu ornare
               faucibus.</p>
-            <input type = "hidden" id = movie_id value="">
-            <div class="dropdown">
-              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Dropdown button
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">Action</a>
-                <a class="dropdown-item" href="#">Another action</a>
-                <a class="dropdown-item" href="#">Something else here</a>
-              </div>
-            </div>
           </div>
         </div>
     </div>
@@ -116,17 +89,6 @@
             <h3>Power Thirst</h3>
             <p>Cras nisi dolor, tristique id vehicula vitae, mollis at eros. Ut euismod sem eu tellus
               vestibulum, in facilisis est feugiat. Mauris sed leo sed erat vestibulum suscipit.</p>
-              <input type = "hidden" id = movie_id value="">
-              <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Dropdown button
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
-                  <a class="dropdown-item" href="#">Something else here</a>
-                </div>
-              </div>
           </div>
         </div>
     </div>
@@ -138,17 +100,6 @@
             <h3>Power Thirst</h3>
             <p>Cras nisi dolor, tristique id vehicula vitae, mollis at eros. Ut euismod sem eu tellus
               vestibulum, in facilisis est feugiat. Mauris sed leo sed erat vestibulum suscipit.</p>
-              <input type = "hidden" id = movie_id value="">
-              <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Dropdown button
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">Action</a>
-                  <a class="dropdown-item" href="#">Another action</a>
-                  <a class="dropdown-item" href="#">Something else here</a>
-                </div>
-              </div>
           </div>
         </div>
     </div>
@@ -160,31 +111,13 @@
             <h3>Power Thirst</h3>
             <p>Cras nisi dolor, tristique id vehicula vitae, mollis at eros. Ut euismod sem eu tellus
               vestibulum, in facilisis est feugiat. Mauris sed leo sed erat vestibulum suscipit.</p>
-              <input type = "hidden" id = movie_id value="">
-              <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Add to list
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">1 - Horrendous</a>
-                  <a class="dropdown-item" href="#">2 - Horrible</a>
-                  <a class="dropdown-item" href="#">3 - Awful</a>
-                  <a class="dropdown-item" href="#">4 - Very Bad</a>
-                  <a class="dropdown-item" href="#">5 - Bad</a>
-                  <a class="dropdown-item" href="#">6 - Fine</a>
-                  <a class="dropdown-item" href="#">7 - Mediocre</a>
-                  <a class="dropdown-item" href="#">8 - Great</a>
-                  <a class="dropdown-item" href="#">9 - Amazing</a>
-                  <a class="dropdown-item" href="#">10 - Masterpiece</a>
-                </div>
-              </div>
           </div>
         </div>
     </div>
   </div>
   <!-- search results-->
 
-  
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
   <script src="../movies.js"></script>
 </body>

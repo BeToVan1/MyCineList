@@ -27,3 +27,14 @@
     margin: 0; 
     margin-right: 30px;
 }
+
+
+.dropdown-item{
+    font-size: 9px;
+    padding: 0px 0px;
+    margin-top: 0px;
+}
+
+#dropdownMenuButton{
+    font-size: 11px;
+}

@@ -35,7 +35,13 @@ mongoose.connect("mongodb://127.0.0.1:27017/userDB", {useNewUrlParser: true});
 const userSchema = new mongoose.Schema ({
     email: String,
     password: String,
-    googleId: String
+    googleId: String,
+    movieIds: [
+        {
+            movieId : Number,
+            score: Number
+        }
+    ]
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -84,7 +90,7 @@ app.get('/auth/google/MyCineList',
   passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
     //placeholder
-    res.redirect('/index');
+    res.redirect('/loggedin');
   });
 
 app.get("/login", function(req,res){
@@ -96,9 +102,9 @@ app.get("/register", function(req,res){
 });
 
 //placeholder
-app.get("/index", function(req,res){
+app.get("/loggedin", function(req,res){
     if(req.isAuthenticated()){
-        res.render("index");
+        res.render("loggedin");
     }else{
         res.redirect("login");
     }
@@ -110,6 +116,12 @@ app.get("/logout", function(req,res){
     res.redirect("/");
 });
 
+//save movie score
+app.get("/save-movie-score", function(req,res){
+    console.log("pogger");
+    res.json({ message: 'Movie scores retrieved successfully' });
+});
+
 //register 
 app.post("/register", (req,res) => {
     User.register({username: req.body.username}, req.body.password, function(err,user){
@@ -119,7 +131,7 @@ app.post("/register", (req,res) => {
         }else{
             passport.authenticate("local")(req,res,function(){
                 //placeholder
-                res.redirect("/index");
+                res.redirect("/loggedin");
             });
         }
     });
@@ -132,18 +144,45 @@ app.post("/login", function(req,res){
         username: req.body.username,
         password: req.body.password
     });
-    
+    //console.log(req);
     req.login(user, function(err){
         if(err){
             console.log(err);
         }else{
             passport.authenticate("local")(req,res,function(){
                 //placeholder
-                res.redirect("/index");
+                res.redirect("/loggedin");
             });
         }
     });
 });
+
+//save movie score to db
+app.post("/save-movie-score", async (req, res) => {
+    try {
+        // Extract data from the request body
+        const movie = { movieId: req.body.movieId, score: req.body.score };
+        
+        // Find the user by their ID and await the result
+        const foundUser = await User.findById(req.user._id);
+        console.log(foundUser);
+        if (foundUser) {
+            // Push the movie object into the movieIds array
+            foundUser.movieIds.push(movie);
+            await foundUser.save(); // Save the changes to the database
+            console.log("success");
+            res.json({ message: 'Score updated successfully' });
+        } else {
+            // Handle the case where the user is not found (e.g., send a not found response)
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (err) {
+        console.error(err);
+        // Handle any errors that occur during the process (e.g., send an error response)
+        res.status(500).json({ message: 'Error updating user' });
+    }
+});
+
 
 app.listen(3000,function(){
     console.log("Server started on port 3000");
