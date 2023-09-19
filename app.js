@@ -89,7 +89,6 @@ app.get('/auth/google',
 app.get('/auth/google/MyCineList', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
-    //placeholder
     res.redirect('/loggedin');
   });
 
@@ -101,7 +100,10 @@ app.get("/register", function(req,res){
     res.render("register");
 });
 
-//placeholder
+app.get("/mylist", function(req,res){
+    res.render("mylist");
+});
+
 app.get("/loggedin", function(req,res){
     if(req.isAuthenticated()){
         res.render("loggedin");
@@ -112,8 +114,12 @@ app.get("/loggedin", function(req,res){
 
 //need to add logout button 
 app.get("/logout", function(req,res){
-    req.logout();
-    res.redirect("/");
+    req.logout(function(err){
+        if(err){
+            console.log(err);
+        }
+        res.redirect('/');
+    });
 });
 
 //save movie score
@@ -165,15 +171,21 @@ app.post("/save-movie-score", async (req, res) => {
         
         // Find the user by their ID and await the result
         const foundUser = await User.findById(req.user._id);
-        console.log(foundUser);
         if (foundUser) {
             // Push the movie object into the movieIds array
-            foundUser.movieIds.push(movie);
+            const alreadyAdded = foundUser.movieIds.find(movies => parseInt(movies.movieId) === parseInt(movie.movieId));
+            if(alreadyAdded){
+                alreadyAdded.score = movie.score;
+            }
+            else{
+                foundUser.movieIds.push(movie);
+            }
             await foundUser.save(); // Save the changes to the database
             console.log("success");
             res.json({ message: 'Score updated successfully' });
         } else {
             // Handle the case where the user is not found (e.g., send a not found response)
+            res.render("login");
             res.status(404).json({ message: 'User not found' });
         }
     } catch (err) {

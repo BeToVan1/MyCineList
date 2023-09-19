@@ -38,3 +38,11 @@
 #dropdownMenuButton{
     font-size: 11px;
 }
+
+.index .dropdown{
+    display: none;
+}
+
+.loggedin .dropdown{
+    display: block;
+}

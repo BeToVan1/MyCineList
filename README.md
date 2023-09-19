@@ -1,7 +1,6 @@
 # MyCineList
 # TO DO LIST
-    Make score changeable / does not add same movie twice
     Make text of search results move left
     Make mylist
-    Make add to list button invisible if not logged in
+    Make Options for add to list scrollable (cant see all options depending on length of synopsis)
     Overall make website look better

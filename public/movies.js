@@ -76,15 +76,22 @@ function loadMore(){
                             <h3>"${searchData.results[i].title}"</h3>
                             <p>"${searchData.results[i].overview}"</p>
                             <div class="dropdown">
-                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Dropdown button
-                                </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <a class="dropdown-item" href="#">Something else here</a>
-                         </div>
-                        </div>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Add to list
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">1 - Horrendous</a>
+                  <a class="dropdown-item" href="#">2 - Horrible</a>
+                  <a class="dropdown-item" href="#">3 - Awful</a>
+                  <a class="dropdown-item" href="#">4 - Very Bad</a>
+                  <a class="dropdown-item" href="#">5 - Bad</a>
+                  <a class="dropdown-item" href="#">6 - Fine</a>
+                  <a class="dropdown-item" href="#">7 - Mediocre</a>
+                  <a class="dropdown-item" href="#">8 - Great</a>
+                  <a class="dropdown-item" href="#">9 - Amazing</a>
+                  <a class="dropdown-item" href="#">10 - Masterpiece</a>
+                </div>
+              </div>
                         </div>
                     </div>
                     </div>
@@ -112,7 +119,7 @@ $(window).on("scroll", onScroll);
 //movie score selector
 $(document).ready(function () {
     // Add a click event handler to each dropdown item
-    $(".dropdown-item").on("click", function () {
+    $("#search-results-section").on("click",".dropdown-item", function () {
       // Get the selected score from the clicked item
       var selectedScore = parseInt($(this).text().split(" - ")[0]);
   
