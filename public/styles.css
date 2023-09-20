@@ -46,3 +46,7 @@
 .loggedin .dropdown{
     display: block;
 }
+
+.list-text{
+    vertical-align: middle;
+}

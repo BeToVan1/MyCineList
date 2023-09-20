@@ -27,6 +27,7 @@ form.addEventListener('submit', function (event) {
                 //window.location.href = `/search-results.html?results=${searchResults}`;
                 console.log(searchResults);
                 $("#hero").hide();
+                $(".userlist").hide();
                 $("#search-results-section").show();
                 var numofResults = searchResults.results.length;
                 
@@ -124,13 +125,23 @@ $(document).ready(function () {
       var selectedScore = parseInt($(this).text().split(" - ")[0]);
   
       // Get the movie ID from the data attribute
-      var movieId = $(this).parent().parent().siblings("#movie_id").val();       
+      var movieId = $(this).parent().parent().siblings("#movie_id").val();      
       
+      //get movie image
+      var searchResult = $(this).closest(".search-result");
+      var imgElement = searchResult.find("img");
+      var srcValue = imgElement.attr("src");
+     
+      
+
+      //get movie title
+      var title = searchResult.find("h3").text();
+     
       // Send the selected score and movie ID to the server (e.g., via AJAX)
       $.ajax({
         url: "/save-movie-score", // Replace with your server endpoint
         method: "POST",
-        data: { movieId: movieId, score: selectedScore },
+        data: { movieId: movieId, score: selectedScore, imgURL: srcValue, title: title },
         success: function (response) {
           // Handle the server's response (e.g., display a success message)
           console.log(response);

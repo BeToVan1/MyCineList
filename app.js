@@ -39,7 +39,9 @@ const userSchema = new mongoose.Schema ({
     movieIds: [
         {
             movieId : Number,
-            score: Number
+            score: Number,
+            imgURL: String,
+            title: String
         }
     ]
 });
@@ -100,8 +102,19 @@ app.get("/register", function(req,res){
     res.render("register");
 });
 
-app.get("/mylist", function(req,res){
-    res.render("mylist");
+app.get("/mylist", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            res.render("mylist", { movieData });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
 });
 
 app.get("/loggedin", function(req,res){
@@ -167,8 +180,8 @@ app.post("/login", function(req,res){
 app.post("/save-movie-score", async (req, res) => {
     try {
         // Extract data from the request body
-        const movie = { movieId: req.body.movieId, score: req.body.score };
-        
+        const movie = { movieId: req.body.movieId, score: req.body.score, imgURL: req.body.imgURL, title: req.body.title };
+        console.log(req.body.imgURL);
         // Find the user by their ID and await the result
         const foundUser = await User.findById(req.user._id);
         if (foundUser) {
