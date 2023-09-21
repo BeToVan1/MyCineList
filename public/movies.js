@@ -68,11 +68,11 @@ function loadMore(){
             if(poster != null){
                 const new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + poster;
                 const resultHtml = `
-                    <div class="well search-result text-bg-dark">
+                    <div class="well search-result text-bg-dark my-3">
                     <div class="row">
-                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2"> <img class="img-responsive"
+                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"> <img class="img-responsive"
                             src="${new_image}" width = "200" height = "300" alt=""></div>
-                        <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10 title">
+                        <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10-half title">
                             <input type = "hidden" id = movie_id value="${searchData.results[i].id}">
                             <h3>"${searchData.results[i].title}"</h3>
                             <p>"${searchData.results[i].overview}"</p>
@@ -96,6 +96,7 @@ function loadMore(){
                         </div>
                     </div>
                     </div>
+                    <hr>
                 `;
 
                 $("#search-results-section").append(resultHtml);

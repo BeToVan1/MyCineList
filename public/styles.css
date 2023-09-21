@@ -3,7 +3,7 @@
 }
 
 .well {
-    overflow: hidden; 
+    overflow: visible; 
 }
 
 .well .col-lg-2 img {
@@ -15,7 +15,7 @@
 
 
 .well .title {
-    overflow: hidden; 
+    overflow: visible; 
 }
 
 
@@ -33,6 +33,7 @@
     font-size: 9px;
     padding: 0px 0px;
     margin-top: 0px;
+    z-index: 99;
 }
 
 #dropdownMenuButton{
@@ -50,3 +51,15 @@
 .list-text{
     vertical-align: middle;
 }
+
+.dropdown{
+    z-index: 99;
+}
+
+.table{
+    margin: auto;
+    width: 55% !important;
+}
+
+
+

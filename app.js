@@ -181,7 +181,6 @@ app.post("/save-movie-score", async (req, res) => {
     try {
         // Extract data from the request body
         const movie = { movieId: req.body.movieId, score: req.body.score, imgURL: req.body.imgURL, title: req.body.title };
-        console.log(req.body.imgURL);
         // Find the user by their ID and await the result
         const foundUser = await User.findById(req.user._id);
         if (foundUser) {
