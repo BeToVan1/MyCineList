@@ -11,6 +11,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
@@ -28,7 +29,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //connects to db
-mongoose.connect("mongodb://127.0.0.1:27017/userDB", {useNewUrlParser: true});
+mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true});
 
 
 //schema for user
@@ -208,7 +209,7 @@ app.post("/save-movie-score", async (req, res) => {
 });
 
 
-app.listen(3000,function(){
+app.listen(PORT,function(){
     console.log("Server started on port 3000");
 });
 //google oauth
