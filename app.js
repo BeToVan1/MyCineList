@@ -9,6 +9,7 @@ const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
+const MongoStore = require("connect-mongo");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,7 +23,8 @@ app.use(bodyParser.urlencoded({
 app.use(session({
     secret: "Our little secret.",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: MongoStore.create({mongoUrl: process.env.MONGO_URI})
 }));
 
 app.use(passport.initialize());
@@ -106,6 +108,7 @@ app.get("/register", function(req,res){
 app.get("/mylist", async (req, res) => {
     try {
         const foundUser = await User.findById(req.user._id);
+        //console.log(req);
         if (foundUser) {
             const movieData = foundUser.movieIds;
             res.render("mylist", { movieData });
