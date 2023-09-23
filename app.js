@@ -24,24 +24,24 @@ app.use(session({
     secret: "Our little secret.",
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({mongoUrl: process.env.MONGO_URI})
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 //connects to db
-mongoose.connect(process.env.MONGO_URI, {useNewUrlParser: true});
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true });
 
 
 //schema for user
-const userSchema = new mongoose.Schema ({
+const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     googleId: String,
     movieIds: [
         {
-            movieId : Number,
+            movieId: Number,
             score: Number,
             imgURL: String,
             title: String
@@ -56,12 +56,12 @@ const User = new mongoose.model("User", userSchema);
 
 passport.use(User.createStrategy());
 
-passport.serializeUser(function(user,done){
-    done(null,user);
+passport.serializeUser(function (user, done) {
+    done(null, user);
 });
 
-passport.deserializeUser(function(user,done){
-    done(null,user);
+passport.deserializeUser(function (user, done) {
+    done(null, user);
 });
 
 passport.use(new GoogleStrategy({
@@ -69,13 +69,13 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.CLIENT_SECRET,
     callbackURL: "https://mycinelist.cyclic.cloud/auth/google/MyCineList",
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    //console.log(profile);
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
-  }
+},
+    function (accessToken, refreshToken, profile, cb) {
+        //console.log(profile);
+        User.findOrCreate({ googleId: profile.id }, function (err, user) {
+            return cb(err, user);
+        });
+    }
 ));
 
 
@@ -84,24 +84,24 @@ app.get('./movies.js', (req, res) => {
     // Rest of the code to send the file
 });
 
-app.get("/", function(req,res){
+app.get("/", function (req, res) {
     res.render("index");
 });
 
 app.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile'] }));
+    passport.authenticate('google', { scope: ['profile'] }));
 
-app.get('/auth/google/MyCineList', 
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  function(req, res) {
-    res.redirect('/loggedin');
-  });
+app.get('/auth/google/MyCineList',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    function (req, res) {
+        res.redirect('/loggedin');
+    });
 
-app.get("/login", function(req,res){
+app.get("/login", function (req, res) {
     res.render("login");
 });
 
-app.get("/register", function(req,res){
+app.get("/register", function (req, res) {
     res.render("register");
 });
 
@@ -121,18 +121,18 @@ app.get("/mylist", async (req, res) => {
     }
 });
 
-app.get("/loggedin", function(req,res){
-    if(req.isAuthenticated()){
+app.get("/loggedin", function (req, res) {
+    if (req.isAuthenticated()) {
         res.render("loggedin");
-    }else{
+    } else {
         res.redirect("login");
     }
 });
 
 //need to add logout button 
-app.get("/logout", function(req,res){
-    req.logout(function(err){
-        if(err){
+app.get("/logout", function (req, res) {
+    req.logout(function (err) {
+        if (err) {
             console.log(err);
         }
         res.redirect('/');
@@ -140,44 +140,69 @@ app.get("/logout", function(req,res){
 });
 
 //save movie score
-app.get("/save-movie-score", function(req,res){
+app.get("/save-movie-score", function (req, res) {
     console.log("pogger");
     res.json({ message: 'Movie scores retrieved successfully' });
 });
 
 //register 
-app.post("/register", (req,res) => {
-    User.register({username: req.body.username}, req.body.password, function(err,user){
-        if(err){
+app.post("/register", (req, res) => {
+    User.register({ username: req.body.username }, req.body.password, function (err, user) {
+        if (err) {
             console.log(err);
             res.redirect("/register");
-        }else{
-            passport.authenticate("local")(req,res,function(){
+        } else {
+            passport.authenticate("local")(req, res, function () {
                 //placeholder
                 res.redirect("/loggedin");
             });
         }
     });
-    
+
 });
 
 //login 
-app.post("/login", function(req,res){
+app.post("/login", function (req, res) {
     const user = new User({
         username: req.body.username,
         password: req.body.password
     });
     //console.log(req);
-    req.login(user, function(err){
-        if(err){
+    req.login(user, function (err) {
+        if (err) {
             console.log(err);
-        }else{
-            passport.authenticate("local")(req,res,function(){
+        } else {
+            passport.authenticate("local")(req, res, function () {
                 //placeholder
                 res.redirect("/loggedin");
             });
         }
     });
+});
+
+//remove from list
+app.post("/remove", async (req, res) => {
+    try {
+        const movieIdToRemove = req.body.movieId;
+        const foundUser = await User.findById(req.user._id);
+        
+        if (foundUser) {
+            for(var i = foundUser.movieIds.length -1; i >= 0; --i){
+                console.log(foundUser.movieIds[i].movieId);
+                if(parseInt(foundUser.movieIds[i].movieId) === parseInt(movieIdToRemove)){
+                    //console.log("pog");
+                    foundUser.movieIds.splice(i,1);
+                    await foundUser.save();
+                    res.redirect("mylist");
+                }
+            }
+        } else {
+            console.log("user not found when removing movie");
+        }
+    }catch(err){
+        console.log(err);      
+    }
+
 });
 
 //save movie score to db
@@ -190,10 +215,10 @@ app.post("/save-movie-score", async (req, res) => {
         if (foundUser) {
             // Push the movie object into the movieIds array
             const alreadyAdded = foundUser.movieIds.find(movies => parseInt(movies.movieId) === parseInt(movie.movieId));
-            if(alreadyAdded){
+            if (alreadyAdded) {
                 alreadyAdded.score = movie.score;
             }
-            else{
+            else {
                 foundUser.movieIds.push(movie);
             }
             await foundUser.save(); // Save the changes to the database
@@ -212,7 +237,7 @@ app.post("/save-movie-score", async (req, res) => {
 });
 
 
-app.listen(PORT,function(){
+app.listen(PORT, function () {
     console.log("Server started on port 3000");
 });
 //google oauth
