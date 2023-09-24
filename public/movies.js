@@ -153,6 +153,28 @@ $(document).ready(function () {
         },
       });
     });
+
+    //updates users score if they change on mylist
+    $(".userlist").on("click", ".dropdown-item",function(){
+      var selectedScore = parseInt($(this).text().split(" - ")[0]);
+      var movieId = $(this).parent().parent().siblings("#movie_id").val();  
+      var button = $(this).parent().siblings("#dropdownMenuButton"); 
+      button.text(selectedScore);
+      
+      $.ajax({
+        url: "/save-movie-score", // Replace with your server endpoint
+        method: "POST",
+        data: { movieId: movieId, score: selectedScore},
+        success: function (response) {
+          // Handle the server's response (e.g., display a success message)
+          console.log(response);
+        },
+        error: function (error) {
+          // Handle errors (e.g., display an error message)
+          console.error(error);
+        },
+      });
+    });
   });
   
 

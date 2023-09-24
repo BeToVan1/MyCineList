@@ -237,7 +237,25 @@
             <th scope="row" class="list-text"><%= rowNum %></th>
             <th scope="row"><img src=<%= movie.imgURL %> "width = 200px height = 100px"></th>
             <th scope="row" class="list-text"><%= movie.title %></th>
-            <th scope="row" class="list-text"><%= movie.score %></th>
+            <th scope="row" class="list-text">
+              <input type = "hidden" id = movie_id value="<%= movie.movieId %>">
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">  
+                  <%= movie.score %>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <a class="dropdown-item" href="#">1 - Horrendous</a>
+                  <a class="dropdown-item" href="#">2 - Horrible</a>
+                  <a class="dropdown-item" href="#">3 - Awful</a>
+                  <a class="dropdown-item" href="#">4 - Very Bad</a>
+                  <a class="dropdown-item" href="#">5 - Bad</a>
+                  <a class="dropdown-item" href="#">6 - Fine</a>
+                  <a class="dropdown-item" href="#">7 - Mediocre</a>
+                  <a class="dropdown-item" href="#">8 - Great</a>
+                  <a class="dropdown-item" href="#">9 - Amazing</a>
+                  <a class="dropdown-item" href="#">10 - Masterpiece</a>
+                </div>
+            </div></th>
           </tr>
           <% rowNum++; %>
         <% }); %>
