@@ -44,6 +44,14 @@
     display: none;
 }
 
+.register .dropdown{
+    display: none;
+}
+
+.login .dropdown{
+    display: none;
+}
+
 .loggedin .dropdown{
     display: block;
 }
