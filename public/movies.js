@@ -28,6 +28,8 @@ form.addEventListener('submit', function (event) {
                 console.log(searchResults);
                 $("#hero").hide();
                 $(".userlist").hide();
+                $(".register-page").hide();
+                $("#NowPlaying").hide();
                 $("#search-results-section").show();
                 var numofResults = searchResults.results.length;
                 
@@ -175,6 +177,40 @@ $(document).ready(function () {
         },
       });
     });
+
+    NowPlayingCarousel();
   });
   
+//Now playing carousel
+function NowPlayingCarousel(){
 
+  const options = {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMTE5MzkyZDJjNDRlNWYzYjI3MGY1YWRlNWFjMjIxZCIsInN1YiI6IjY0ZmFkYWM2ZmZjOWRlMDEzOGViYWZhZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.CXi3K75a6AwYUhEm8yG_QtO2colywujc7Mi3MymUozw'
+    }
+  };
+    // Fetch data about now playing movies from the API (similar to your previous fetch code)
+  fetch('https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1', options)
+    .then(response => response.json())
+    .then(data => {
+    // Assuming data.results is an array of movie objects with image URLs
+    const movieData = data.results;
+
+  // Select the carousel's img elements
+    const carouselImages = document.querySelectorAll('#NowPlaying .carousel-item img');
+
+  // Loop through the movieData and update the src attributes of the carousel images
+    for (let i = 0; i < movieData.length && i < carouselImages.length; i++) {
+      const imageUrl = movieData[i].poster_path; // Assuming the API response has image URLs
+      carouselImages[i].src = `https://image.tmdb.org/t/p/w500${imageUrl}`;
+      carouselImages[i].width = 200;
+      carouselImages[i].height = 500;
+      carouselImages[i].alt = `Slide ${i + 1}`; // You can set alt text as desired
+    }
+  })
+  .catch(err => console.error(err));
+
+  }
+  
