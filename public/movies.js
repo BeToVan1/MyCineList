@@ -53,7 +53,7 @@ form.addEventListener('submit', function (event) {
                     }
                     else{
                         $(this).hide();
-                        $(this).nextAll(".hrsearch:first");
+                        $(this).nextAll(".hrsearch:first").hide();
                         $("#load-more").hide();
                     }
                 });
