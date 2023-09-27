@@ -121,6 +121,8 @@ app.get("/mylist", async (req, res) => {
     }
 });
 
+
+
 app.get("/loggedin", function (req, res) {
     if (req.isAuthenticated()) {
         res.render("loggedin");
@@ -141,7 +143,7 @@ app.get("/logout", function (req, res) {
 
 //save movie score
 app.get("/save-movie-score", function (req, res) {
-    console.log("pogger");
+    c
     res.json({ message: 'Movie scores retrieved successfully' });
 });
 
@@ -236,8 +238,62 @@ app.post("/save-movie-score", async (req, res) => {
     }
 });
 
+app.get("/moviepage", async (req, res) => {
+    try {
+        const movieId = req.query.movie_id;
+        const options = {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMTE5MzkyZDJjNDRlNWYzYjI3MGY1YWRlNWFjMjIxZCIsInN1YiI6IjY0ZmFkYWM2ZmZjOWRlMDEzOGViYWZhZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.CXi3K75a6AwYUhEm8yG_QtO2colywujc7Mi3MymUozw'
+            }
+        };
+  
+      // Make the first fetch request to get movie details
+      const movieInfoPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=en-US`, options)
+        .then(response => response.json())
+        .then(response => {
+          return {
+            title: response.title,
+            overview: response.overview,
+            poster_path: response.poster_path,
+            score: response.vote_average,
+            genres: response.genres
+          };
+        });
+  
+      // Make a second fetch request (example)
+      const trailerPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?language=en-US`, options)
+        .then(response => response.json())
+        .then(response =>{
+            return response.results[0].key;
+        })
+        .catch(err => console.error(err));
+        
+  
+      // Use Promise.all to wait for both promises to resolve
+      Promise.all([movieInfoPromise, trailerPromise])
+        .then(([movieInfo, trailer]) => {
+          console.log(movieInfo);
+          console.log(trailer);
+  
+          // Render the "moviepage" template with the collected data
+          res.render("moviepage", { movieInfo, trailer });
+        })
+        .catch(err => {
+          console.error(err);
+          res.status(500).send("Internal Server Error 1");
+        });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error 2");
+    }
+  });
+  
+  
+  
+
 
 app.listen(PORT, function () {
     console.log("Server started on port 3000");
 });
-//google oauth
