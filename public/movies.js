@@ -39,6 +39,8 @@ form.addEventListener('submit', function (event) {
                         var p = $(this).find("p");
                         var img = $(this).find("img");
                         var id = $(this).find("#movie_id");
+                        var hr = $(this).nextAll(".hrsearch:first");
+                        hr.show();
                         id.val(searchResults.results[i].id);
                         var new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + searchResults.results[i].poster_path;
                     
@@ -50,6 +52,7 @@ form.addEventListener('submit', function (event) {
                     }
                     else{
                         $(this).hide();
+                        $(this).nextAll(".hrsearch:first");
                         $("#load-more").hide();
                     }
                 });
@@ -186,6 +189,7 @@ $(document).ready(function () {
 
       window.location.href = url;
     });
+
 
     NowPlayingCarousel();
   });

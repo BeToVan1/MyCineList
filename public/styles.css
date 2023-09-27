@@ -18,6 +18,9 @@
     overflow: visible; 
 }
 
+.hrsearch{
+    display: none;
+}
 
 .well h3 {
     margin: 0; 
