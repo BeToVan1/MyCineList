@@ -35,6 +35,7 @@ form.addEventListener('submit', function (event) {
                 
                 $(".search-result").each(function(i){
                     if(i < numofResults){
+                        $(this).show();
                         var h3 = $(this).find("h3");
                         var p = $(this).find("p");
                         var img = $(this).find("img");
