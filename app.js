@@ -241,6 +241,7 @@ app.post("/save-movie-score", async (req, res) => {
 app.get("/moviepage", async (req, res) => {
     try {
         const movieId = req.query.movie_id;
+        console.log(movieId);
         const options = {
             method: 'GET',
             headers: {
@@ -262,23 +263,29 @@ app.get("/moviepage", async (req, res) => {
           };
         });
   
-      // Make a second fetch request (example)
+      // Make a second fetch request to get trailer link
       const trailerPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?language=en-US`, options)
         .then(response => response.json())
         .then(response =>{
             return response.results[0].key;
         })
         .catch(err => console.error(err));
-        
-  
+    
+      // Make a third fetch request to get cast
+      const castPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`, options)
+        .then(response => response.json())
+        .then(response =>{
+            return response.cast;
+        })
+        .catch(err => console.error(err));
       // Use Promise.all to wait for both promises to resolve
-      Promise.all([movieInfoPromise, trailerPromise])
-        .then(([movieInfo, trailer]) => {
-          console.log(movieInfo);
-          console.log(trailer);
-  
+      Promise.all([movieInfoPromise, trailerPromise, castPromise])
+        .then(([movieInfo, trailer, cast]) => {
+          //console.log(movieInfo);
+          //console.log(trailer);
+          //console.log(cast);
           // Render the "moviepage" template with the collected data
-          res.render("moviepage", { movieInfo, trailer });
+          res.render("moviepage", { movieInfo, trailer, cast });
         })
         .catch(err => {
           console.error(err);
@@ -289,6 +296,8 @@ app.get("/moviepage", async (req, res) => {
       res.status(500).send("Internal Server Error 2");
     }
   });
+
+  
   
   
   

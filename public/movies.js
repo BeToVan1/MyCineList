@@ -182,13 +182,14 @@ $(document).ready(function () {
       });
     });
 
-    $("#search-results-section").on("click", ".img-responsive", function (event) {
-      var movieId = $(this).closest(".search-result").find("#movie_id").val();
+    $(".userlist").on("click", ".img-responsive", function(event){
+      var movieId = $(this).data("movieid");
       event.preventDefault();
-      // Use AJAX to fetch the content of moviepage.ejs
-      const url = `/moviepage?movie_id=${movieId}`;
+      
+      const url = `/moviepage?movie_id=${movieId}&source=loggedin`;
 
       window.location.href = url;
+      
     });
 
 
