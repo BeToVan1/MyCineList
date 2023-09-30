@@ -31,6 +31,7 @@ form.addEventListener('submit', function (event) {
                 $(".register-page").hide();
                 $("#NowPlaying").hide();
                 $("#search-results-section").show();
+                $(".movieinfo").hide();
                 var numofResults = searchResults.results.length;
                 
                 $(".search-result").each(function(i){
@@ -66,6 +67,9 @@ form.addEventListener('submit', function (event) {
 
 //loads past initial 5
 function loadMore(){
+  const urlParams = new URLSearchParams(window.location.search);
+  const source = urlParams.get("source");
+  //console.log(source);
     var numResults = searchData.results.length;
     if(loaded === false){
         for(var i = 5; i < numResults; i++){
@@ -73,9 +77,28 @@ function loadMore(){
             //some movies dont have posters
             if(poster != null){
                 const new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + poster;
-                const resultHtml = `
+                if(source === "loggedout"){
+                  const resultHtml = `
                     <div class="well search-result text-bg-dark my-3">
-                    <div class="row">
+                      <div class="row">
+                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"><a href="/moviepage"> <img class="img-responsive"
+                            src="${new_image}" width = "200" height = "300" alt=""></a></div>
+                        <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10-half title">
+                            <input type = "hidden" id = movie_id value="${searchData.results[i].id}">
+                            <h3>"${searchData.results[i].title}"</h3>
+                            <p>"${searchData.results[i].overview}"</p>
+                        </div>
+                      </div>
+                    </div>
+                    <hr>
+                  `;
+                
+                  $("#search-results-section").append(resultHtml);
+                }
+                else{
+                  const resultHtml = `
+                    <div class="well search-result text-bg-dark my-3">
+                      <div class="row">
                         <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"><a href="/moviepage"> <img class="img-responsive"
                             src="${new_image}" width = "200" height = "300" alt=""></a></div>
                         <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10-half title">
@@ -83,29 +106,30 @@ function loadMore(){
                             <h3>"${searchData.results[i].title}"</h3>
                             <p>"${searchData.results[i].overview}"</p>
                             <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Add to list
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="#">1 - Horrendous</a>
-                  <a class="dropdown-item" href="#">2 - Horrible</a>
-                  <a class="dropdown-item" href="#">3 - Awful</a>
-                  <a class="dropdown-item" href="#">4 - Very Bad</a>
-                  <a class="dropdown-item" href="#">5 - Bad</a>
-                  <a class="dropdown-item" href="#">6 - Fine</a>
-                  <a class="dropdown-item" href="#">7 - Mediocre</a>
-                  <a class="dropdown-item" href="#">8 - Great</a>
-                  <a class="dropdown-item" href="#">9 - Amazing</a>
-                  <a class="dropdown-item" href="#">10 - Masterpiece</a>
-                </div>
-              </div>
+                              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Add to list
+                              </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                              <a class="dropdown-item" href="#">1 - Horrendous</a>
+                              <a class="dropdown-item" href="#">2 - Horrible</a>
+                              <a class="dropdown-item" href="#">3 - Awful</a>
+                              <a class="dropdown-item" href="#">4 - Very Bad</a>
+                              <a class="dropdown-item" href="#">5 - Bad</a>
+                              <a class="dropdown-item" href="#">6 - Fine</a>
+                              <a class="dropdown-item" href="#">7 - Mediocre</a>
+                              <a class="dropdown-item" href="#">8 - Great</a>
+                              <a class="dropdown-item" href="#">9 - Amazing</a>
+                              <a class="dropdown-item" href="#">10 - Masterpiece</a>
+                            </div>
+                          </div>
                         </div>
-                    </div>
+                      </div>
                     </div>
                     <hr>
-                `;
-
-                $("#search-results-section").append(resultHtml);
+                  `;
+                
+                  $("#search-results-section").append(resultHtml);
+                }
             }
         }
         loaded = true;
@@ -138,7 +162,7 @@ $(document).ready(function () {
       var searchResult = $(this).closest(".search-result");
       var imgElement = searchResult.find("img");
       var srcValue = imgElement.attr("src");
-     
+      $(this).closest(".dropdown").find(".btn-secondary").text("Added");
       
 
       //get movie title
