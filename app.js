@@ -259,7 +259,8 @@ app.get("/moviepage", async (req, res) => {
             overview: response.overview,
             poster_path: response.poster_path,
             score: response.vote_average,
-            genres: response.genres
+            genres: response.genres,
+            id: movieId
           };
         });
   

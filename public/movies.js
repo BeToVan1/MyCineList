@@ -42,6 +42,7 @@ form.addEventListener('submit', function (event) {
                         var img = $(this).find("img");
                         var id = $(this).find("#movie_id");
                         var hr = $(this).nextAll(".hrsearch:first");
+                        $(this).closest(".dropdown").find(".btn-secondary").text("Add to list");
                         hr.show();
                         id.val(searchResults.results[i].id);
                         var new_image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/" + searchResults.results[i].poster_path;
@@ -192,9 +193,32 @@ $(document).ready(function () {
       button.text(selectedScore);
       
       $.ajax({
-        url: "/save-movie-score", // Replace with your server endpoint
+        url: "/save-movie-score", 
         method: "POST",
         data: { movieId: movieId, score: selectedScore},
+        success: function (response) {
+          
+          console.log(response);
+        },
+        error: function (error) {
+          
+          console.error(error);
+        },
+      });
+    });
+
+    $(".movieinfo").on("click", ".dropdown-item", function(){
+      var title = $(".movieinfo").find("h3").text();
+      var srcValue = $(".movieinfo").find("img").attr("src");
+      var selectedScore = parseInt($(this).text().split(" - ")[0]);
+      var movieId = $(this).parent().parent().siblings("#movie_id").val();
+      var button = $(this).parent().siblings("#dropdownMenuButton"); 
+      button.text("Added");
+
+      $.ajax({
+        url: "/save-movie-score", 
+        method: "POST",
+        data: { movieId: movieId, score: selectedScore, imgURL: srcValue, title: title },
         success: function (response) {
           // Handle the server's response (e.g., display a success message)
           console.log(response);
@@ -204,6 +228,7 @@ $(document).ready(function () {
           console.error(error);
         },
       });
+
     });
 
     $(".userlist").on("click", ".img-responsive", function(event){

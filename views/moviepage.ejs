@@ -44,7 +44,7 @@
                         <a class="btn btn-dark btn-lg" href="/register" role="button">Sign-up</a>
                     </div>
                     <div id="logged">
-                        <a class="btn btn-dark btn-lg" href="/mylist" role="button">MyList</a>
+                        <a class="btn btn-dark btn-lg" href="/mylist" role="button">My List</a>
                         <a class="btn btn-dark btn-lg" href="/logout" role="button">Logout</a>
                     </div>
                 </div>
@@ -228,7 +228,7 @@
                 </div>
             </div>
             <div class="row">
-                <h4>&starf; <%= movieInfo.score %>
+                <h4>&starf; <%= Math.round(movieInfo.score * 10) / 10 %>
                 </h4>
                 <hr>
             </div>
@@ -247,6 +247,25 @@
                 <div class="col-lg-4">
                     <% var genreString=movieInfo.genres.map(function(genre) { return genre.name; }).join(', '); %>
                     <p>Genres: <%= genreString %></p>
+                    <input type="hidden" id=movie_id value="<%= movieInfo.id %>">
+                    <div class="dropdown">
+                      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Add to list
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#">1 - Horrendous</a>
+                        <a class="dropdown-item" href="#">2 - Horrible</a>
+                        <a class="dropdown-item" href="#">3 - Awful</a>
+                        <a class="dropdown-item" href="#">4 - Very Bad</a>
+                        <a class="dropdown-item" href="#">5 - Bad</a>
+                        <a class="dropdown-item" href="#">6 - Fine</a>
+                        <a class="dropdown-item" href="#">7 - Mediocre</a>
+                        <a class="dropdown-item" href="#">8 - Great</a>
+                        <a class="dropdown-item" href="#">9 - Amazing</a>
+                        <a class="dropdown-item" href="#">10 - Masterpiece</a>
+                      </div>
+                    </div>
                 </div>
                 <div class="col-lg-8">
                     <p><%= movieInfo.overview %></p>
