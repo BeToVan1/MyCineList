@@ -82,7 +82,7 @@ function loadMore(){
                   const resultHtml = `
                     <div class="well search-result text-bg-dark my-3">
                       <div class="row">
-                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"><a href="/moviepage"> <img class="img-responsive"
+                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"><a href="/moviepage"> <img style="max-width: 100%; height: auto;" class="img-responsive"
                             src="${new_image}" width = "200" height = "300" alt=""></a></div>
                         <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10-half title">
                             <input type = "hidden" id = movie_id value="${searchData.results[i].id}">
@@ -100,7 +100,7 @@ function loadMore(){
                   const resultHtml = `
                     <div class="well search-result text-bg-dark my-3">
                       <div class="row">
-                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"><a href="/moviepage"> <img class="img-responsive"
+                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-1-half"><a href="/moviepage"> <img style="max-width: 100%; height: auto;" class="img-responsive"
                             src="${new_image}" width = "200" height = "300" alt=""></a></div>
                         <div class="col-xs-6 col-sm-9 col-md-9 col-lg-10-half title">
                             <input type = "hidden" id = movie_id value="${searchData.results[i].id}">
