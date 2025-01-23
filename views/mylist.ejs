@@ -288,6 +288,7 @@
     const scoreOrder = "<%= scoreOrder %>";
     
     $(document).ready(function(){
+      // loads up movie page if poster is clicked on in search results
       $("#search-results-section").on("click", ".img-responsive", function (event) {
       var movieId = $(this).closest(".search-result").find("#movie_id").val();
       event.preventDefault();
@@ -296,6 +297,7 @@
 
       window.location.href = url;
     });
+    // sorts user list by title 
     $(".userlist").on("click", "#title", function(event){
       var url = ``;
       if (sortOrder === "(increasing)"){
@@ -309,6 +311,7 @@
       }
       window.location.href = url;
     });
+    // sorts user list by score
     $(".userlist").on("click", "#score", function(event){
       var url = ``;
       if (scoreOrder === "(increasing)"){
@@ -323,6 +326,7 @@
       window.location.href = url;
     });
   });
+  // gets a shareable link for user list (copied to clipboard)
   document.getElementById("share-list").addEventListener("click", function(){
     const shareablelink = document.getElementById("shareable-link").value;
     console.log(shareablelink);

@@ -63,14 +63,14 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (user, done) {
     done(null, user);
 });
-
+// google OAuth
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: 
-        process.env.NODE_ENV === "production"
-            ? process.env.PROD_CALLBACK_URL
-            : process.env.DEV_CALLBACK_URL,
+    callbackURL: process.env.PROD_CALLBACK_URL,
+        //process.env.NODE_ENV === "production"
+        //    ? process.env.PROD_CALLBACK_URL
+        //    : process.env.DEV_CALLBACK_URL,
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 },
     function (accessToken, refreshToken, profile, cb) {
@@ -81,7 +81,7 @@ passport.use(new GoogleStrategy({
     }
 ));
 
-
+// get request for movie data
 app.get('./movies.js', async (req, res) => {
     try {
         const foundUser = await User.findById(req.user._id);
@@ -98,6 +98,7 @@ app.get('./movies.js', async (req, res) => {
     }
 });
 
+// default route
 app.get("/", function (req, res) {
     res.render("index");
 });
@@ -105,20 +106,23 @@ app.get("/", function (req, res) {
 app.get('/auth/google',
     passport.authenticate('google', { scope: ['profile'] }));
 
+// redirect when user is logged in 
 app.get('/auth/google/MyCineList',
     passport.authenticate('google', { failureRedirect: '/login' }),
     function (req, res) {
         res.redirect('/loggedin');
     });
 
+// redirect to login page
 app.get("/login", function (req, res) {
     res.render("login");
 });
 
+// redirect to register page
 app.get("/register", function (req, res) {
     res.render("register");
 });
-
+// redirect to my list
 app.get("/mylist", async (req, res) => {
     try {
         const foundUser = await User.findById(req.user._id);

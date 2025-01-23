@@ -5,14 +5,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MyCineList</title>
+  <!-- CSS -->  
   <link rel="stylesheet" href="../styles.css">
+  <!-- bootstrap -->  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+  <!-- bootstrap for half and quarter grid -->  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/hoomanbahreini/bootstrap-half-and-quarter-grid/fractional-grid.css">
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
 
-  
+  <!-- jquery -->  
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
@@ -170,11 +173,13 @@
   <!-- trending movies carousel-->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
   <script>
+    // checks to see if the user is logged in
     const loggedin = false;
   </script>
   <script src="../movies.js"></script>
   <script>
     $(document).ready(function(){
+      // loads up movie page if movie poster is clicked on
       $("#search-results-section").on("click", ".img-responsive", function (event) {
         var movieId = $(this).closest(".search-result").find("#movie_id").val();
         event.preventDefault();
@@ -183,6 +188,7 @@
 
         window.location.href = url;
       });
+      // loads up movie page if movie title is clicked on
       $("#search-results-section").on("click", ".title h3", function (event) {
         var movieId = $(this).closest(".search-result").find("#movie_id").val();
         event.preventDefault();
@@ -191,6 +197,7 @@
 
         window.location.href = url;
       });
+      // loads up movie apge if movie poster on carousel is clicked on
       $("#NowPlaying").on("click", ".carousel-item img", function(event){
         var movieId = this.id;
         //console.log(movieId);

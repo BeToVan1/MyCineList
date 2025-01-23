@@ -265,6 +265,7 @@
     <script src="../movies.js"></script>
     <script>
       $(document).ready(function(){
+        // if user clicks on movie poster in search results, movie page loads up
         $("#search-results-section").on("click", ".img-responsive", function (event) {
           var movieId = $(this).closest(".search-result").find("#movie_id").val();
           event.preventDefault();
@@ -273,6 +274,16 @@
     
           window.location.href = url;
         });
+        // loads up movie page if movie title is clicked on
+        $("#search-results-section").on("click", ".title h3", function (event) {
+          var movieId = $(this).closest(".search-result").find("#movie_id").val();
+          event.preventDefault();
+            
+          const url = `/moviepage?movie_id=${movieId}&source=loggedin`;
+
+          window.location.href = url;
+        });
+        // loads up movie page if carousel img is clicked on
         $("#NowPlaying").on("click", ".carousel-item img", function(event){
           var movieId = this.id;
           //console.log(movieId);

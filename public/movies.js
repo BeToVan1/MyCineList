@@ -22,7 +22,6 @@ form.addEventListener('submit', async function (event) {
         fetch(apiEndpoint, options)
             .then(response => response.json())
             .then(data => {
-                // Handle the API response data here
                 const searchResults = data;
                 searchData = data;
                 //window.location.href = `/search-results.html?results=${searchResults}`;
@@ -34,6 +33,7 @@ form.addEventListener('submit', async function (event) {
                 $("#search-results-section").show();
                 $(".movieinfo").hide();
                 var numofResults = searchResults.results.length;
+                // displays each search result
                 $(".search-result").each(function(i){
                     if(i < numofResults){
                         $(this).show();
@@ -43,6 +43,7 @@ form.addEventListener('submit', async function (event) {
                         var id = $(this).find("#movie_id");
                         var hr = $(this).nextAll(".hrsearch:first");
                         var buttonText = "Add to List";
+                        // if the user is logged in, then movies on their list should display their score instead of "add to list"
                         if (loggedin){
                           const userMovie = moviedata.find(m => m.movieId === searchResults.results[i].id);
                           //console.log(userMovie);
@@ -185,17 +186,17 @@ $(document).ready(function () {
       //get movie title
       var title = searchResult.find("h3").text();
      
-      // Send the selected score and movie ID to the server (e.g., via AJAX)
+      // Send the selected score and movie ID to the server via AJAX
       $.ajax({
-        url: "/save-movie-score", // Replace with your server endpoint
+        url: "/save-movie-score", 
         method: "POST",
         data: { movieId: movieId, score: selectedScore, imgURL: srcValue, title: title },
         success: function (response) {
-          // Handle the server's response (e.g., display a success message)
+          // Handle the server's response 
           console.log(response);
         },
         error: function (error) {
-          // Handle errors (e.g., display an error message)
+          // Handle errors 
           console.error(error);
         },
       });
@@ -246,7 +247,7 @@ $(document).ready(function () {
       });
 
     });
-
+    // if user clicks on movie poster in user list, loads movie page
     $(".userlist").on("click", ".img-responsive", function(event){
       var movieId = $(this).data("movieid");
       event.preventDefault();
@@ -256,7 +257,7 @@ $(document).ready(function () {
       window.location.href = url;
       
     });
-
+    // if user clicks on movie title in user list, loads movie page
     $(".userlist").on("click", "#title", function(event){
       var movieId = $(this).data("movieid");
       event.preventDefault();
@@ -284,7 +285,7 @@ function NowPlayingCarousel(){
   fetch('https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1', options)
     .then(response => response.json())
     .then(data => {
-    // Assuming data.results is an array of movie objects with image URLs
+    
     const movieData = data.results;
 
   // Select the carousel's img elements
