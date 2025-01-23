@@ -67,10 +67,10 @@ passport.deserializeUser(function (user, done) {
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: process.env.PROD_CALLBACK_URL,
-        //process.env.NODE_ENV === "production"
-        //    ? process.env.PROD_CALLBACK_URL
-        //    : process.env.DEV_CALLBACK_URL,
+    callbackURL:
+        process.env.NODE_ENV === "production"
+            ? process.env.PROD_CALLBACK_URL
+            : process.env.DEV_CALLBACK_URL,
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 },
     function (accessToken, refreshToken, profile, cb) {
