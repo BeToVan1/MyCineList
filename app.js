@@ -147,13 +147,14 @@ app.get("/mylist-title-inc", async (req, res) => {
         //console.log(req);
         if (foundUser) {
             const movieData = foundUser.movieIds;
+            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
             //console.log(movieData);
             movieData.sort((a,b) => {
                 if (a.title < b.title) return -1;
                 if (a.title > b.title) return 1;
                 return 0;
             });
-            res.render("mylist", { movieData, sortOrder : "(increasing)",scoreOrder: " " });
+            res.render("mylist", { movieData, sortOrder : "(increasing)",scoreOrder: " ", shareableLink });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
@@ -169,13 +170,14 @@ app.get("/mylist-title-dec", async (req, res) => {
         //console.log(req);
         if (foundUser) {
             const movieData = foundUser.movieIds;
+            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
             //console.log(movieData);
             movieData.sort((a,b) => {
                 if (a.title > b.title) return -1;
                 if (a.title < b.title) return 1;
                 return 0;
             });
-            res.render("mylist", { movieData, sortOrder : "(decreasing)",scoreOrder: " " });
+            res.render("mylist", { movieData, sortOrder : "(decreasing)",scoreOrder: " ", shareableLink });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
@@ -191,13 +193,14 @@ app.get("/mylist-score-dec", async (req, res) => {
         //console.log(req);
         if (foundUser) {
             const movieData = foundUser.movieIds;
+            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
             //console.log(movieData);
             movieData.sort((a,b) => {
                 if (a.score > b.score) return -1;
                 if (a.score < b.score) return 1;
                 return 0;
             });
-            res.render("mylist", { movieData, scoreOrder : "(decreasing)",sortOrder: " " });
+            res.render("mylist", { movieData, scoreOrder : "(decreasing)",sortOrder: " ", shareableLink });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
@@ -210,6 +213,7 @@ app.get("/mylist-score-dec", async (req, res) => {
 app.get("/mylist-score-inc", async (req, res) => {
     try {
         const foundUser = await User.findById(req.user._id);
+        const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
         //console.log(req);
         if (foundUser) {
             const movieData = foundUser.movieIds;
@@ -219,7 +223,7 @@ app.get("/mylist-score-inc", async (req, res) => {
                 if (a.score > b.score) return 1;
                 return 0;
             });
-            res.render("mylist", { movieData, scoreOrder : "(increasing)",sortOrder: " " });
+            res.render("mylist", { movieData, scoreOrder : "(increasing)",sortOrder: " ", shareableLink });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
