@@ -67,7 +67,10 @@ passport.deserializeUser(function (user, done) {
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: "https://mycinelist.onrender.com/auth/google/MyCineList",
+    callbackURL: 
+        process.env.NODE_ENV === "production"
+            ? process.env.PROD_CALLBACK_URL
+            : process.env.DEV_CALLBACK_URL,
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 },
     function (accessToken, refreshToken, profile, cb) {
@@ -79,9 +82,20 @@ passport.use(new GoogleStrategy({
 ));
 
 
-app.get('./movies.js', (req, res) => {
-    res.set('Content-Type', 'application/javascript');
-    // Rest of the code to send the file
+app.get('./movies.js', async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            res.send({userMovies : movieData});
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
 });
 
 app.get("/", function (req, res) {
@@ -111,7 +125,97 @@ app.get("/mylist", async (req, res) => {
         //console.log(req);
         if (foundUser) {
             const movieData = foundUser.movieIds;
-            res.render("mylist", { movieData });
+            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
+            res.render("mylist", { movieData, sortOrder: " ", scoreOrder: " ", shareableLink });
+            //console.log(movieData);
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort titles alphabetically inc
+app.get("/mylist-title-inc", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.title < b.title) return -1;
+                if (a.title > b.title) return 1;
+                return 0;
+            });
+            res.render("mylist", { movieData, sortOrder : "(increasing)",scoreOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort titles alphabetically dec
+app.get("/mylist-title-dec", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.title > b.title) return -1;
+                if (a.title < b.title) return 1;
+                return 0;
+            });
+            res.render("mylist", { movieData, sortOrder : "(decreasing)",scoreOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort scores dec
+app.get("/mylist-score-dec", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.score > b.score) return -1;
+                if (a.score < b.score) return 1;
+                return 0;
+            });
+            res.render("mylist", { movieData, scoreOrder : "(decreasing)",sortOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort scores inc
+app.get("/mylist-score-inc", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.score < b.score) return -1;
+                if (a.score > b.score) return 1;
+                return 0;
+            });
+            res.render("mylist", { movieData, scoreOrder : "(increasing)",sortOrder: " " });
         } else {
             res.status(404).json({ message: 'User not found' });
         }
@@ -123,11 +227,22 @@ app.get("/mylist", async (req, res) => {
 
 
 
-app.get("/loggedin", function (req, res) {
-    if (req.isAuthenticated()) {
-        res.render("loggedin");
-    } else {
-        res.redirect("login");
+app.get("/loggedin", async (req, res) =>{
+    try {
+        if (req.isAuthenticated()) {
+            const foundUser = await User.findById(req.user._id);
+            if(foundUser){
+                const movieData = foundUser.movieIds;
+                res.render("loggedin", {movieData});
+            }else{
+                res.status(404).json({ message: 'User not found' });
+            }
+        } else {
+            res.redirect("login");
+        }
+    }catch(error){
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
     }
 });
 
@@ -241,7 +356,7 @@ app.post("/save-movie-score", async (req, res) => {
 app.get("/moviepage", async (req, res) => {
     try {
         const movieId = req.query.movie_id;
-        console.log(movieId);
+        //console.log(movieId);
         const options = {
             method: 'GET',
             headers: {
@@ -298,12 +413,131 @@ app.get("/moviepage", async (req, res) => {
     }
   });
 
-  
-  
-  
-  
+  app.get('/api/user-movie-data', async (req, res) => {
+    const userId = req.query.userId;
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+    }
 
+    try {
+        const foundUser = await User.findById(userId);
+        if (foundUser) {
+            res.json(foundUser.movieIds);
+        } else {
+            res.json([]);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch user movie data' });
+    }
+});
 
+//public route to view a user's movie list
+app.get("/list/:userId", async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const foundUser = await User.findById(userId);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            res.render("public-list", { movieData, username: foundUser.username, sortOrder: " ", scoreOrder: " " }); // Create a public-list.ejs template
+        } else {
+            res.status(404).send("User not found or list is private.");
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error fetching user list.");
+    }
+});
+//sort titles alphabetically inc (public list)
+app.get("/list-title-inc/:userId", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.title < b.title) return -1;
+                if (a.title > b.title) return 1;
+                return 0;
+            });
+            res.render("public-list", { movieData, username: foundUser.username, sortOrder : "(increasing)",scoreOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort titles alphabetically dec (public list)
+app.get("/list-title-dec/:userId", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.title > b.title) return -1;
+                if (a.title < b.title) return 1;
+                return 0;
+            });
+            res.render("public-list", { movieData, username: foundUser.username, sortOrder : "(decreasing)",scoreOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort scores dec (public list)
+app.get("/list-score-dec/:userId", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.score > b.score) return -1;
+                if (a.score < b.score) return 1;
+                return 0;
+            });
+            res.render("public-list", { movieData, username: foundUser.username, scoreOrder : "(decreasing)",sortOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+//sort scores inc (public list)
+app.get("/list-score-inc/:userId", async (req, res) => {
+    try {
+        const foundUser = await User.findById(req.user._id);
+        //console.log(req);
+        if (foundUser) {
+            const movieData = foundUser.movieIds;
+            //console.log(movieData);
+            movieData.sort((a,b) => {
+                if (a.score < b.score) return -1;
+                if (a.score > b.score) return 1;
+                return 0;
+            });
+            res.render("public-list", { movieData, username: foundUser.username, scoreOrder : "(increasing)",sortOrder: " " });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching user data' });
+    }
+});
+  
+  
 app.listen(PORT, function () {
     console.log("Server started on port 3000");
 });

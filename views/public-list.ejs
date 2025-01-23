@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+    <title><%= username %>'s Movie List</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyCineList</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/hoomanbahreini/bootstrap-half-and-quarter-grid/fractional-grid.css">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>  
+</head>
+<body class = "text-bg-dark">
+    <div id="hero" class="px-4 py-5 my-2 text-center">
+        <!--<img class="d-block mx-auto mb-4" src="/docs/5.3/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> -->
+        <h1 class="display-5 fw-bold text-light text-bg-secondary" style="max-width: 1046.64px; margin:0 auto;"><%= username %>'s Movie List</h1>
+        <div class="col-lg-6 mx-auto ">
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+          </div>
+        </div>
+    </div>
+  <!-- user list-->
+  <table class="table table-dark userlist">
+    <thead>
+      <tr>
+        <th width="10%" scope="col-sm"></th>
+        <th width="5%"  scope="col">#</th>
+        <th width="20%" scope="col">Image</th>
+        <th width="50%" scope="col" > 
+          <span class="clickable" id="title">
+            Title <%- sortOrder %>
+          </span>
+        </th>
+        <th width="15%" scope="col" >
+          <span class="clickable" id="score">
+            Score <%- scoreOrder %>
+          </span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+        <% let rowNum = 1; %>
+        <% movieData.forEach(function(movie) { %>
+          <tr>
+            <th scope="row" class="list-text">
+              <form action="/remove" method="POST">
+                <input type="hidden" id="movie_id" name="movieId" value="<%= movie.movieId %>">
+              </form>
+            </th>
+            <th scope="row" class="list-text"><%= rowNum %></th>
+            <th scope="row"><a href="/moviepage" class="img-responsive" data-movieid="<%= movie.movieId %>"><img src=<%= movie.imgURL %> "width = 200px height = 100px"></a></th>
+            <th scope="row" class="list-text clickable" id = "title" data-movieid="<%= movie.movieId %>"><%= movie.title %></th>
+            <th scope="row" class="list-text">
+              <input type = "hidden" id = movie_id value="<%= movie.movieId %>">
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">  
+                  <%= movie.score %>
+                </button>
+            </div></th>
+          </tr>
+          <% rowNum++; %>
+        <% }); %>
+    </tbody>
+  </table>
+  <!-- user list-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+  <script>
+    const sortOrder = "<%= sortOrder %>";
+    const scoreOrder = "<%= scoreOrder %>";
+    
+    $(document).ready(function(){
+        $(".userlist").on("click", "#title", function(event){
+        var url = ``;
+        if (sortOrder === "(increasing)"){
+            url = `/list-title-dec/:userId`;
+        }
+        else if (sortOrder === "(decreasing)"){
+            url = `/list/:userId`;
+        }
+        else{
+            url = `/list-title-inc/:userId`
+        }
+        window.location.href = url;
+        });
+        $(".userlist").on("click", "#score", function(event){
+        var url = ``;
+        if (scoreOrder === "(increasing)"){
+            url = `/list-score-dec/:userId`;
+        }
+        else if (scoreOrder === "(decreasing)"){
+            url = `/list/:userId`;
+        }
+        else{
+            url = `/list-score-inc/:userId`
+        }
+        window.location.href = url;
+        });
+    });
+  </script>
+</body>
+</html>
