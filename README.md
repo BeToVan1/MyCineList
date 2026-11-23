@@ -17,6 +17,7 @@ MyCineList is a full-stack web application that allows users to discover movies,
 - ↕️ **Sorting** — Sort movies within your personal list
 - 🔗 **Shareable Lists** — Share your movie list with others
 - 🎥 **Now Playing** — Browse movies that are currently playing
+- 🎞️ **Film discovery** — Explore the featured film and curated shelf, filter by genre, or search the live TMDB catalog
 
 ## 🛠️ Tech Stack
 
@@ -25,8 +26,6 @@ MyCineList is a full-stack web application that allows users to discover movies,
 - CSS
 - JavaScript
 - EJS
-- Bootstrap
-- jQuery
 
 ### Backend
 - Node.js
@@ -52,7 +51,7 @@ MyCineList integrates with the TMDB API to retrieve movie information such as ti
 
 Users authenticate through Google OAuth and can search for movies, add them to their personal collection, and assign ratings from 1–10. User information and movie ratings are persisted in MongoDB.
 
-The application uses Express.js for backend routing and application logic, EJS for server-side rendering, and JavaScript/jQuery for client-side interactions.
+The application uses Express.js for backend routing and application logic, EJS for server-side rendering, and JavaScript for client-side interactions.
 
 ## 💡 What I Learned
 

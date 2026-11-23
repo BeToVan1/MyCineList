@@ -1,0 +1,6 @@
+<header><div class="shell mast">
+  <a href="/" class="brand" aria-label="MyCineList home"><span class="ticket" aria-hidden="true"><i></i><i></i><i></i></span>MyCineList</a>
+  <nav aria-label="Main navigation"><a href="/" id="nav-discover">Discover</a><a href="/mylist" id="nav-list">My list <span id="list-count"><%= count %></span></a></nav>
+  <form class="search" action="/" role="search"><span data-icon="search"></span><input id="query" name="q" type="search" aria-label="Search films" placeholder="Search films…"><kbd aria-hidden="true">/</kbd></form>
+  <a class="account-link" href="<%= signedIn ? '/logout' : '/login' %>"><%= signedIn ? 'Sign out' : 'Sign in' %></a>
+</div></header>

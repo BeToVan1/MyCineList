@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title><%= register ? 'Create account' : 'Sign in' %> · MyCineList</title><link rel="stylesheet" href="/styles.css"></head>
+<body><%- include('header',{signedIn,count}) %>
+<main class="auth shell"><div class="auth-still" aria-hidden="true"></div><section>
+<h1><%= register ? 'Create an account.' : 'Welcome back.' %></h1><p>Save films and keep your ratings in one place.</p>
+<% if(problem){ %><p class="form-error" role="alert"><%= register ? 'Could not create this account. Check your email or sign in with an existing account.' : 'Check your email and password and try again.' %></p><% } %>
+<form method="post" action="<%= register ? '/register' : '/login' %>">
+<label>Email<input required type="email" name="username" autocomplete="username"></label>
+<label>Password<input required type="password" name="password" autocomplete="<%= register ? 'new-password' : 'current-password' %>"></label>
+<button class="button red"><%= register ? 'Create account' : 'Sign in' %></button></form>
+<a class="button outline google" href="/auth/google">Continue with Google</a>
+<p><%= register ? 'Already have an account?' : 'New to MyCineList?' %> <a class="text-link" href="<%= register?'/login':'/register' %>"><%= register?'Sign in':'Create an account' %></a></p>
+</section></main></body></html>

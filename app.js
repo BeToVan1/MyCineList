@@ -44,6 +44,8 @@ const userSchema = new mongoose.Schema({
             movieId: Number,
             score: Number,
             imgURL: String,
+            year: String,
+            genres: [String],
             title: String
         }
     ]
@@ -56,12 +58,15 @@ const User = new mongoose.model("User", userSchema);
 
 passport.use(User.createStrategy());
 
-passport.serializeUser(function (user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function (user, done) {
-    done(null, user);
+passport.serializeUser((user, done) => done(null, user._id));
+passport.deserializeUser(async (storedUser, done) => {
+    try {
+        // Active sessions created by earlier versions contain the user object.
+        const id = storedUser._id || storedUser;
+        done(null, await User.findById(id).select('_id username movieIds') || false);
+    } catch (error) {
+        done(error);
+    }
 });
 // google OAuth
 passport.use(new GoogleStrategy({
@@ -81,290 +86,20 @@ passport.use(new GoogleStrategy({
     }
 ));
 
-// get request for movie data
-app.get('./movies.js', async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            res.send({userMovies : movieData});
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-
-// default route
-app.get("/", function (req, res) {
-    res.render("index");
-});
-
 app.get('/auth/google',
     passport.authenticate('google', { scope: ['profile'] }));
 
 // redirect when user is logged in 
 app.get('/auth/google/MyCineList',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    function (req, res) {
-        res.redirect('/loggedin');
-    });
-
-// redirect to login page
-app.get("/login", function (req, res) {
-    res.render("login");
-});
-
-// redirect to register page
-app.get("/register", function (req, res) {
-    res.render("register");
-});
-// redirect to my list
-app.get("/mylist", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
-            res.render("mylist", { movieData, sortOrder: " ", scoreOrder: " ", shareableLink });
-            //console.log(movieData);
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort titles alphabetically inc
-app.get("/mylist-title-inc", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.title < b.title) return -1;
-                if (a.title > b.title) return 1;
-                return 0;
-            });
-            res.render("mylist", { movieData, sortOrder : "(increasing)",scoreOrder: " ", shareableLink });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort titles alphabetically dec
-app.get("/mylist-title-dec", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.title > b.title) return -1;
-                if (a.title < b.title) return 1;
-                return 0;
-            });
-            res.render("mylist", { movieData, sortOrder : "(decreasing)",scoreOrder: " ", shareableLink });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort scores dec
-app.get("/mylist-score-dec", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.score > b.score) return -1;
-                if (a.score < b.score) return 1;
-                return 0;
-            });
-            res.render("mylist", { movieData, scoreOrder : "(decreasing)",sortOrder: " ", shareableLink });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort scores inc
-app.get("/mylist-score-inc", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        const shareableLink = `${req.protocol}://${req.get('host')}/list/${foundUser._id}`;
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.score < b.score) return -1;
-                if (a.score > b.score) return 1;
-                return 0;
-            });
-            res.render("mylist", { movieData, scoreOrder : "(increasing)",sortOrder: " ", shareableLink });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
+    passport.authenticate('google', {
+        failureRedirect: '/login',
+        successReturnToOrRedirect: '/loggedin',
+        keepSessionInfo: true
+    }));
 
 
-
-app.get("/loggedin", async (req, res) =>{
-    try {
-        if (req.isAuthenticated()) {
-            const foundUser = await User.findById(req.user._id);
-            if(foundUser){
-                const movieData = foundUser.movieIds;
-                res.render("loggedin", {movieData});
-            }else{
-                res.status(404).json({ message: 'User not found' });
-            }
-        } else {
-            res.redirect("login");
-        }
-    }catch(error){
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-
-//need to add logout button 
-app.get("/logout", function (req, res) {
-    req.logout(function (err) {
-        if (err) {
-            console.log(err);
-        }
-        res.redirect('/');
-    });
-});
-
-//save movie score
-app.get("/save-movie-score", function (req, res) {
-    c
-    res.json({ message: 'Movie scores retrieved successfully' });
-});
-
-//register 
-app.post("/register", (req, res) => {
-    User.register({ username: req.body.username }, req.body.password, function (err, user) {
-        if (err) {
-            console.log(err);
-            res.redirect("/register");
-        } else {
-            passport.authenticate("local")(req, res, function () {
-                //placeholder
-                res.redirect("/loggedin");
-            });
-        }
-    });
-
-});
-
-//login 
-app.post("/login", function (req, res) {
-    const user = new User({
-        username: req.body.username,
-        password: req.body.password
-    });
-    //console.log(req);
-    req.login(user, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            passport.authenticate("local")(req, res, function () {
-                //placeholder
-                res.redirect("/loggedin");
-            });
-        }
-    });
-});
-
-//remove from list
-app.post("/remove", async (req, res) => {
-    try {
-        const movieIdToRemove = req.body.movieId;
-        const foundUser = await User.findById(req.user._id);
-        
-        if (foundUser) {
-            for(var i = foundUser.movieIds.length -1; i >= 0; --i){
-                console.log(foundUser.movieIds[i].movieId);
-                if(parseInt(foundUser.movieIds[i].movieId) === parseInt(movieIdToRemove)){
-                    //console.log("pog");
-                    foundUser.movieIds.splice(i,1);
-                    await foundUser.save();
-                    res.redirect("mylist");
-                }
-            }
-        } else {
-            console.log("user not found when removing movie");
-        }
-    }catch(err){
-        console.log(err);      
-    }
-
-});
-
-//save movie score to db
-app.post("/save-movie-score", async (req, res) => {
-    try {
-        // Extract data from the request body
-        const movie = { movieId: req.body.movieId, score: req.body.score, imgURL: req.body.imgURL, title: req.body.title };
-        // Find the user by their ID and await the result
-        const foundUser = await User.findById(req.user._id);
-        if (foundUser) {
-            // Push the movie object into the movieIds array
-            const alreadyAdded = foundUser.movieIds.find(movies => parseInt(movies.movieId) === parseInt(movie.movieId));
-            if (alreadyAdded) {
-                alreadyAdded.score = movie.score;
-            }
-            else {
-                foundUser.movieIds.push(movie);
-            }
-            await foundUser.save(); // Save the changes to the database
-            console.log("success");
-            res.json({ message: 'Score updated successfully' });
-        } else {
-            // Handle the case where the user is not found (e.g., send a not found response)
-            res.render("login");
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (err) {
-        console.error(err);
-        // Handle any errors that occur during the process (e.g., send an error response)
-        res.status(500).json({ message: 'Error updating user' });
-    }
-});
-
-app.get("/moviepage", async (req, res) => {
-    try {
-        const movieId = req.query.movie_id;
-        //console.log(movieId);
+// Keep the existing Render integration working while allowing a managed token.
+async function tmdb(path, params) {
         const options = {
             method: 'GET',
             headers: {
@@ -373,179 +108,21 @@ app.get("/moviepage", async (req, res) => {
             }
         };
   
-      // Make the first fetch request to get movie details
-      const movieInfoPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}?language=en-US`, options)
-        .then(response => response.json())
-        .then(response => {
-          return {
-            title: response.title,
-            overview: response.overview,
-            poster_path: response.poster_path,
-            score: response.vote_average,
-            genres: response.genres,
-            id: movieId
-          };
-        });
-  
-      // Make a second fetch request to get trailer link
-      const trailerPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?language=en-US`, options)
-        .then(response => response.json())
-        .then(response =>{
-            return response.results[0].key;
-        })
-        .catch(err => console.error(err));
-    
-      // Make a third fetch request to get cast
-      const castPromise = fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?language=en-US`, options)
-        .then(response => response.json())
-        .then(response =>{
-            return response.cast;
-        })
-        .catch(err => console.error(err));
-      // Use Promise.all to wait for both promises to resolve
-      Promise.all([movieInfoPromise, trailerPromise, castPromise])
-        .then(([movieInfo, trailer, cast]) => {
-          //console.log(movieInfo);
-          //console.log(trailer);
-          //console.log(cast);
-          // Render the "moviepage" template with the collected data
-          res.render("moviepage", { movieInfo, trailer, cast });
-        })
-        .catch(err => {
-          console.error(err);
-          res.status(500).send("Internal Server Error 1");
-        });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Internal Server Error 2");
-    }
-  });
 
-  app.get('/api/user-movie-data', async (req, res) => {
-    const userId = req.query.userId;
-    if (!userId) {
-        return res.status(400).json({ error: 'User ID is required' });
+    if (process.env.TMDB_READ_TOKEN) {
+        options.headers.Authorization = 'Bearer ' + process.env.TMDB_READ_TOKEN;
     }
+    const url = new URL('https://api.themoviedb.org/3/' + path);
+    url.search = new URLSearchParams({language: 'en-US', ...params});
+    const response = await fetch(url, {...options, signal: AbortSignal.timeout(10000)});
+    if (!response.ok) {
+        const error = new Error('Movie data is unavailable.');
+        error.status = response.status === 404 ? 404 : 502;
+        throw error;
+    }
+    return response.json();
+}
 
-    try {
-        const foundUser = await User.findById(userId);
-        if (foundUser) {
-            res.json(foundUser.movieIds);
-        } else {
-            res.json([]);
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch user movie data' });
-    }
-});
+require('./screening-room')(app, {User, passport, tmdb});
 
-//public route to view a user's movie list
-app.get("/list/:userId", async (req, res) => {
-    try {
-        const userId = req.params.userId;
-        const foundUser = await User.findById(userId);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            res.render("public-list", { movieData, username: foundUser.username, sortOrder: " ", scoreOrder: " " }); // Create a public-list.ejs template
-        } else {
-            res.status(404).send("User not found or list is private.");
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).send("Error fetching user list.");
-    }
-});
-//sort titles alphabetically inc (public list)
-app.get("/list-title-inc/:userId", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.title < b.title) return -1;
-                if (a.title > b.title) return 1;
-                return 0;
-            });
-            res.render("public-list", { movieData, username: foundUser.username, sortOrder : "(increasing)",scoreOrder: " " });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort titles alphabetically dec (public list)
-app.get("/list-title-dec/:userId", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.title > b.title) return -1;
-                if (a.title < b.title) return 1;
-                return 0;
-            });
-            res.render("public-list", { movieData, username: foundUser.username, sortOrder : "(decreasing)",scoreOrder: " " });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort scores dec (public list)
-app.get("/list-score-dec/:userId", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.score > b.score) return -1;
-                if (a.score < b.score) return 1;
-                return 0;
-            });
-            res.render("public-list", { movieData, username: foundUser.username, scoreOrder : "(decreasing)",sortOrder: " " });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-//sort scores inc (public list)
-app.get("/list-score-inc/:userId", async (req, res) => {
-    try {
-        const foundUser = await User.findById(req.user._id);
-        //console.log(req);
-        if (foundUser) {
-            const movieData = foundUser.movieIds;
-            //console.log(movieData);
-            movieData.sort((a,b) => {
-                if (a.score < b.score) return -1;
-                if (a.score > b.score) return 1;
-                return 0;
-            });
-            res.render("public-list", { movieData, username: foundUser.username, scoreOrder : "(increasing)",sortOrder: " " });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching user data' });
-    }
-});
-  
-  
-app.listen(PORT, function () {
-    console.log("Server started on port 3000");
-});
+app.listen(PORT, () => console.log('MyCineList listening on port ' + PORT));
