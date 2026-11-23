@@ -4,5 +4,4 @@ node_modules
 .vercel
 dist
 app.js
-screening-room.js
 views/account.ejs
