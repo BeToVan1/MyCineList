@@ -10,7 +10,7 @@ async function buildDiscover() {
     query: "",
     userId: null,
     library: [],
-    accountOrigin: "https://mycinelist.onrender.com",
+    staticDiscover: true,
   };
   const html = await ejs.renderFile(path.join(root, "views/screening-room.ejs"), {
     pageTitle: "Discover",

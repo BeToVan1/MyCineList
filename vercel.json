@@ -4,31 +4,31 @@
   "installCommand": "npm ci --ignore-scripts",
   "buildCommand": "node scripts/build-discover.js",
   "outputDirectory": "dist",
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/:page(login|register|loggedin|logout|moviepage|mylist|mylist-title-inc|mylist-title-dec|mylist-score-inc|mylist-score-dec)",
-      "destination": "https://mycinelist.onrender.com/:page",
-      "permanent": false
+      "source": "/:page(login|register|loggedin|logout|moviepage|mylist|mylist-title-inc|mylist-title-dec|mylist-score-inc|mylist-score-dec|save-movie-score|remove)",
+      "destination": "/api/backend"
     },
     {
       "source": "/:list(list|list-title-inc|list-title-dec|list-score-inc|list-score-dec)/:id",
-      "destination": "https://mycinelist.onrender.com/:list/:id",
-      "permanent": false
+      "destination": "/api/backend"
     },
     {
       "source": "/auth/:path*",
-      "destination": "https://mycinelist.onrender.com/auth/:path*",
-      "permanent": false
-    }
-  ],
-  "rewrites": [
+      "destination": "/api/backend"
+    },
     {
-      "source": "/api/catalog",
-      "destination": "https://mycinelist.onrender.com/api/catalog"
+      "source": "/api/:endpoint(catalog|session|user-movie-data)",
+      "destination": "/api/backend"
     },
     {
       "source": "/api/films/:id",
-      "destination": "https://mycinelist.onrender.com/api/films/:id"
+      "destination": "/api/backend"
     }
-  ]
+  ],
+  "functions": {
+    "api/backend.js": {
+      "includeFiles": "views/**"
+    }
+  }
 }
