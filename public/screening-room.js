@@ -109,6 +109,11 @@ function drawFeature() {
 }
 
 function requireAccount(id) {
+  // During the first migration phase, the existing host owns account sessions.
+  if (state.accountOrigin) {
+    location.assign(state.accountOrigin + "/moviepage?movie_id=" + encodeURIComponent(id));
+    return false;
+  }
   if (state.userId) return true;
   location.href = "/login?film=" + encodeURIComponent(id);
   return false;
@@ -604,6 +609,8 @@ $("detail").addEventListener("close", () => {
       ?.focus({ preventScroll: true });
   selected = null;
 });
-$("query").value = state.query;
+$("query").value = state.accountOrigin
+  ? (new URLSearchParams(location.search).get("q") || "").slice(0, 200)
+  : state.query;
 updateCatalog();
 if (state.filmId) openDetail(state.filmId);
