@@ -4,9 +4,9 @@ MyCineList is a full-stack web application that allows users to discover movies,
 
 ## 🌐 Live Demo
 
-**[View MyCineList](https://mycinelist.onrender.com/)**
+**[View MyCineList](https://mycinelist-cyan.vercel.app/)**
 
-> The application is hosted on Render, so the initial load may take a few moments if the server has been inactive.
+Discover is served from the Vercel CDN. Search, sign-in, and saved lists run on Vercel Functions using TMDB and MongoDB.
 
 ## ✨ Features
 
@@ -43,7 +43,12 @@ MyCineList is a full-stack web application that allows users to discover movies,
 - TMDB (The Movie Database) API
 
 ### Deployment
-- Render
+- Vercel Hobby
+- The original Render address forwards bookmarks and shared-list links to Vercel.
+
+### Server configuration
+
+Set `MONGO_URI`, `SESSION_SECRET`, `TMDB_READ_TOKEN`, `CLIENT_ID`, and `CLIENT_SECRET` in the server environment. Set `PROD_CALLBACK_URL` to `https://mycinelist-cyan.vercel.app/auth/google/MyCineList` in production and register that URI with the Google OAuth client. Local development uses `DEV_CALLBACK_URL`.
 
 ## ⚙️ How It Works
 

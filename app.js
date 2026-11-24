@@ -13,6 +13,17 @@ const MongoStore = require("connect-mongo");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Keep existing shared links and bookmarks working on the original host.
+if (process.env.RENDER_EXTERNAL_HOSTNAME === 'mycinelist.onrender.com') {
+    const newOrigin = 'https://mycinelist-cyan.vercel.app';
+    app.use((req, res) => {
+        // An OAuth code issued to the old callback belongs to that origin.
+        if (req.path === '/auth/google/MyCineList') return res.redirect(302, newOrigin + '/auth/google');
+        if (req.method === 'GET' || req.method === 'HEAD') return res.redirect(302, newOrigin + req.originalUrl);
+        return res.redirect(303, newOrigin + (req.path === '/register' ? '/register' : '/login'));
+    });
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
