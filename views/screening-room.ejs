@@ -32,5 +32,15 @@
 </main>
 <footer class="shell"><span class="footer-brand">MyCineList</span><span>Film data and images from <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">TMDB</a></span></footer>
 <dialog id="detail" aria-labelledby="detail-title"><div id="detail-content"></div></dialog>
+<dialog id="confirm-remove" aria-labelledby="remove-title" aria-describedby="remove-message">
+  <form method="dialog">
+    <h2 id="remove-title">Remove film from your list?</h2>
+    <p id="remove-message"></p>
+    <div class="actions">
+      <button class="button outline" value="cancel" autofocus>Cancel</button>
+      <button class="button red" value="remove">Remove</button>
+    </div>
+  </form>
+</dialog>
 <div class="toast" role="status" id="toast"></div>
 </body></html>

@@ -159,7 +159,24 @@ async function changeLibrary(id, rating, remove = false) {
 }
 async function toggle(id) {
   await sessionReady;
-  return changeLibrary(id, null, Boolean(saved(id)));
+  if (busy.has(id)) return;
+  const entry = saved(id);
+  if (entry) {
+    const dialog = $("confirm-remove");
+    if (dialog.open) return;
+    const title = byId.get(id).title;
+    $("remove-message").textContent = entry.rating
+      ? `Removing “${title}” will also delete your ${entry.rating}/10 rating.`
+      : `“${title}” will be removed from your list.`;
+    dialog.returnValue = "";
+    const closed = new Promise((resolve) =>
+      dialog.addEventListener("close", resolve, { once: true }),
+    );
+    dialog.showModal();
+    await closed;
+    if (dialog.returnValue !== "remove") return;
+  }
+  return changeLibrary(id, null, Boolean(entry));
 }
 function setRating(id, value) {
   return changeLibrary(id, value ? Number(value) : null);
@@ -589,7 +606,7 @@ document.addEventListener("change", (e) => {
 document.addEventListener("keydown", (e) => {
   if (
     e.key === "/" &&
-    !$("detail").open &&
+    !document.querySelector("dialog[open]") &&
     !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)
   ) {
     e.preventDefault();
