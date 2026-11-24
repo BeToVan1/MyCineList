@@ -6,7 +6,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/:page(login|register|loggedin|logout|moviepage|mylist|mylist-title-inc|mylist-title-dec|mylist-score-inc|mylist-score-dec|save-movie-score|remove)",
+      "source": "/:page(login|register|loggedin|logout|moviepage|watchlist|mylist|mylist-title-inc|mylist-title-dec|mylist-score-inc|mylist-score-dec|save-movie-score|remove)",
       "destination": "/api/backend"
     },
     {
@@ -22,7 +22,7 @@
       "destination": "/api/backend"
     },
     {
-      "source": "/api/films/:id",
+      "source": "/api/:collection(films|watchlist)/:id",
       "destination": "/api/backend"
     }
   ],

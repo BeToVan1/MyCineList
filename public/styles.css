@@ -461,6 +461,19 @@ main {
 .bookmark.saved {
   background: var(--red);
 }
+.watch-toggle {
+  left: 9px;
+  right: auto;
+}
+.queued .icon {
+  fill: currentColor;
+}
+#feature .actions {
+  flex-wrap: wrap;
+}
+#feature-watch:empty {
+  display: none;
+}
 .card h3 {
   font-size: 1rem;
   line-height: 1.25;
@@ -967,8 +980,10 @@ main:focus {
     grid-template-columns: 1fr auto;
   }
   .mast nav {
-    grid-column: 1;
+    grid-column: 1 / -1;
     grid-row: 2;
+    gap: clamp(10px, 3vw, 22px);
+    justify-self: start;
   }
   .mast .account-link {
     grid-row: 2;

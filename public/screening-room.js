@@ -52,7 +52,9 @@ function registerSaved(entries) {
   }
 }
 let library = state.library;
+let watchlist = state.watchlist || [];
 registerSaved(library);
+registerSaved(watchlist);
 registerSaved(state.entries || []);
 let slide = 0,
   genre = "All films",
@@ -104,6 +106,7 @@ function drawFeature() {
     icon(saved(f.id) ? "check" : "plus") +
     (saved(f.id) ? "In my list" : "My list");
   $("feature-save").setAttribute("aria-pressed", String(!!saved(f.id)));
+  $("feature-watch").innerHTML = watchButton(f, "button glass");
   $("slide-index").innerHTML =
     String(slide + 1).padStart(2, "0") + " <em>/ 03</em>";
 }
@@ -120,23 +123,66 @@ async function hasAccount(id) {
   }
   return requireAccount(id);
 }
+function filmParams(f) {
+  return new URLSearchParams({
+    movieId: f.id,
+    title: f.title,
+    imgURL: f.poster || "",
+    year: f.year || "",
+    genres: f.genres.join("|"),
+  });
+}
+function watchButton(f, classes, compact = false) {
+  if (saved(f.id)) return "";
+  const queued = watchlist.some((entry) => entry.id === f.id);
+  const action = queued ? "Remove " + f.title + " from watchlist" : "Add " + f.title + " to watchlist";
+  return '<button class="' + classes + (queued ? " queued" : "") + '" data-watch="' + f.id +
+    '" title="' + safe(action) + '" aria-label="' + safe(action) + '" aria-pressed="' + queued + '">' +
+    icon("save") + (compact ? "" : queued ? "On watchlist" : "Watchlist") + "</button>";
+}
+async function changeWatchlist(id) {
+  if (!(await hasAccount(id)) || busy.has(id)) return;
+  const f = byId.get(id);
+  const queued = watchlist.some((entry) => entry.id === id);
+  busy.add(id);
+  try {
+    const response = await fetch("/api/watchlist/" + id, {
+      method: queued ? "DELETE" : "PUT",
+      body: queued ? undefined : filmParams(f),
+    });
+    if (response.status === 401) {
+      location.href = "/login?film=" + id;
+      return;
+    }
+    if (response.status === 409) {
+      await loadSession();
+      notify("This film is already in your rated list.");
+      return;
+    }
+    if (!response.ok) throw new Error("Watchlist update failed");
+    if (queued) watchlist = watchlist.filter((entry) => entry.id !== id);
+    else watchlist.push({ id });
+    render();
+    if (selected === id && $("detail").open) drawDetail(id);
+    notify(queued ? "Removed from watchlist" : "Added to watchlist");
+  } catch {
+    notify("Could not update your watchlist. Please try again.");
+  } finally {
+    busy.delete(id);
+  }
+}
 async function changeLibrary(id, rating, remove = false) {
   if (!(await hasAccount(id)) || busy.has(id)) return;
   const wasSaved = Boolean(saved(id));
   const f = byId.get(id);
   busy.add(id);
   try {
+    const body = filmParams(f);
+    body.set("score", rating ?? "");
     const response = await fetch(remove ? "/remove" : "/save-movie-score", {
       method: "POST",
       headers: { Accept: "application/json" },
-      body: new URLSearchParams({
-        movieId: id,
-        score: rating ?? "",
-        title: f.title,
-        imgURL: f.poster || "",
-        year: f.year || "",
-        genres: f.genres.join("|"),
-      }),
+      body,
     });
     if (response.status === 401) {
       location.href = "/login?film=" + id;
@@ -146,6 +192,7 @@ async function changeLibrary(id, rating, remove = false) {
     if (remove) library = library.filter((item) => item.id !== id);
     else if (saved(id)) saved(id).rating = rating;
     else library.push({ id, rating });
+    if (!remove) watchlist = watchlist.filter((entry) => entry.id !== id);
     notify(
       remove
         ? "Removed from my list"
@@ -173,6 +220,8 @@ async function toggle(id) {
       : `“${title}” will be removed from your list.`;
   } else {
     $("rate-message").textContent = title;
+    dialog.querySelector('[value="save"]').textContent = watchlist.some((item) => item.id === id)
+      ? "Move to my list" : "Save to my list";
     dialog.querySelector("form").reset();
   }
   dialog.returnValue = "";
@@ -208,7 +257,7 @@ function card(f, entry, isShared) {
     "</a>" +
     '<button class="bookmark ' +
     (isSaved ? "saved" : "") +
-    '" data-save="' +
+    '" title="' + (isSaved ? "Remove from my list" : "Rate and add to my list") + '" data-save="' +
     f.id +
     '" aria-label="' +
     (isSaved ? "Remove " : "Save ") +
@@ -217,8 +266,8 @@ function card(f, entry, isShared) {
     ' my list" aria-pressed="' +
     isSaved +
     '">' +
-    icon(isSaved ? "check" : "save") +
-    "</button></div>" +
+    icon(isSaved ? "check" : "plus") +
+    "</button>" + watchButton(f, "bookmark watch-toggle", true) + "</div>" +
     '<h3><a href="/moviepage?movie_id=' +
     f.id +
     '" data-film="' +
@@ -312,14 +361,13 @@ function render() {
     isList = page !== "discover",
     searching = Boolean(query);
   $("feature").hidden = isList || searching;
-  const activeNav =
-    isList && page === "list" ? "nav-list" : !isList ? "nav-discover" : null;
+  const activeNav = { list: "nav-list", watchlist: "nav-watchlist", discover: "nav-discover" }[page];
   for (const el of document.querySelectorAll("nav a")) {
     if (el.id === activeNav) el.setAttribute("aria-current", "page");
     else el.removeAttribute("aria-current");
   }
   $("list-count").textContent = library.length;
-  const activeList = page === "shared" ? state.entries : library;
+  const activeList = page === "shared" ? state.entries : page === "watchlist" ? watchlist : library;
   let pool;
   if (isList) {
     pool = activeList.map((entry) => byId.get(entry.id));
@@ -374,6 +422,8 @@ function render() {
   }
   const title = searching
     ? "Search results"
+    : page === "watchlist"
+      ? "Watchlist"
     : page === "list"
       ? "My list"
       : page === "shared"
@@ -391,7 +441,8 @@ function render() {
         ? "Discovery"
         : "Curated discovery");
   $("shelf-tools").innerHTML = isList
-    ? '<div class="list-tools"><select class="sort" id="sort" aria-label="Sort list"><option value="recent">List order</option><option value="title">Title A–Z</option><option value="title-desc">Title Z–A</option><option value="rating">Highest rated</option><option value="rating-asc">Lowest rated</option></select>' +
+    ? '<div class="list-tools"><select class="sort" id="sort" aria-label="Sort list"><option value="recent">List order</option><option value="title">Title A–Z</option><option value="title-desc">Title Z–A</option>' +
+      (page === "watchlist" ? "" : '<option value="rating">Highest rated</option><option value="rating-asc">Lowest rated</option>') + '</select>' +
       (page === "list" && library.length
         ? '<button id="share" class="button">Share list</button>'
         : "") +
@@ -412,7 +463,7 @@ function render() {
     .map((f) =>
       card(
         f,
-        isList ? activeList.find((x) => x.id === f.id) : null,
+        isList && page !== "watchlist" ? activeList.find((x) => x.id === f.id) : null,
         page === "shared",
       ),
     )
@@ -426,8 +477,10 @@ function render() {
   $("empty").hidden = items.length > 0 || loading || Boolean(catalogError);
   $("empty").innerHTML = searching
     ? '<strong>No matching films</strong><p>Try another title, director, or cast member.</p><button class="text-link" id="clear">Clear search</button>'
+    : page === "watchlist" && !watchlist.length
+      ? '<strong>Your watchlist is empty.</strong><p>Use the bookmark on a film you want to watch.</p><a class="text-link" href="/">Discover films</a>'
     : page === "list" && !library.length
-      ? '<strong>Your list is ready for its first film.</strong><p>Save a poster from Discover to start your collection.</p><a href="/" class="text-link">Discover films</a>'
+      ? '<strong>Your list is ready for its first film.</strong><p>Use the plus on a film to add your rating.</p><a href="/" class="text-link">Discover films</a>'
       : "<strong>No films to show.</strong>";
   drawFeature();
 }
@@ -471,6 +524,7 @@ function drawDetail(id, focus) {
     icon(entry ? "check" : "plus") +
     (entry ? "Remove from list" : "Add to my list") +
     "</button>" +
+    watchButton(f, "button outline") +
     (f.trailer
       ? '<a class="button outline" target="_blank" rel="noreferrer" href="https://www.youtube.com/watch?v=' +
         encodeURIComponent(f.trailer) +
@@ -581,10 +635,18 @@ document.addEventListener("click", async (event) => {
   } else if (t.dataset.film) {
     event.preventDefault();
     openDetail(Number(t.dataset.film));
+  } else if (t.dataset.watch) {
+    const id = Number(t.dataset.watch);
+    const region = t.closest("#detail, #feature, #grid");
+    await changeWatchlist(id);
+    const next = region?.querySelector('[data-watch="' + id + '"]') || region?.querySelector("[data-film]") || $("query");
+    next.focus({ preventScroll: true });
   } else if (t.dataset.save) {
     const id = Number(t.dataset.save);
     await toggle(id);
-    document.querySelector('[data-save="' + id + '"]')?.focus();
+    const next = document.querySelector('[data-save="' + id + '"]') ||
+      $("grid").querySelector("[data-film]") || $("empty").querySelector("a");
+    next?.focus({ preventScroll: true });
   } else if (t.id === "detail-save") toggle(selected);
   else if (t.hasAttribute("data-close")) $("detail").close();
   else if (t.id === "share") share();
@@ -640,7 +702,9 @@ async function loadSession() {
     const account = await response.json();
     state.userId = account.userId;
     library = account.library;
+    watchlist = account.watchlist || [];
     registerSaved(library);
+    registerSaved(watchlist);
     const link = document.querySelector(".account-link");
     link.href = account.userId ? "/logout" : "/login";
     link.textContent = account.userId ? "Sign out" : "Sign in";

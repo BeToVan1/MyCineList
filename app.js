@@ -57,7 +57,7 @@ app.use((req, res, next) => {
     if (req.method === 'GET') {
         if (req.path === '/api/catalog' || /^\/api\/films\/\d+$/.test(req.path)) return next();
         if (req.path === '/api/session' && !req.headers.cookie) {
-            return res.set('Cache-Control', 'private, no-store').json({ userId: null, library: [] });
+            return res.set('Cache-Control', 'private, no-store').json({ userId: null, library: [], watchlist: [] });
         }
     }
     getSessionMiddleware().then(middleware => middleware(req, res, next)).catch(next);
@@ -68,20 +68,19 @@ const restoreSession = passport.session();
 app.use((req, res, next) => req.session ? restoreSession(req, res, next) : next());
 
 //schema for user
+const filmFields = {
+    movieId: Number,
+    imgURL: String,
+    year: String,
+    genres: [String],
+    title: String
+};
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
     googleId: String,
-    movieIds: [
-        {
-            movieId: Number,
-            score: Number,
-            imgURL: String,
-            year: String,
-            genres: [String],
-            title: String
-        }
-    ]
+    movieIds: [{ ...filmFields, score: Number }],
+    watchlist: [filmFields]
 });
 
 userSchema.plugin(passportLocalMongoose);
@@ -96,7 +95,7 @@ passport.deserializeUser(async (storedUser, done) => {
     try {
         // Active sessions created by earlier versions contain the user object.
         const id = storedUser._id || storedUser;
-        done(null, await User.findById(id).select('_id username movieIds') || false);
+        done(null, await User.findById(id).select('_id username movieIds watchlist') || false);
     } catch (error) {
         done(error);
     }

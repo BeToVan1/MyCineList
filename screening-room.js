@@ -65,8 +65,8 @@ function filmData(movie) {
     trailer: video?.key || "",
   };
 }
-function savedFilms(user) {
-  return (user?.movieIds || []).map((m) => ({
+function savedFilms(entries) {
+  return (entries || []).map((m) => ({
     id: m.movieId,
     title: m.title,
     poster: m.imgURL || "",
@@ -90,6 +90,17 @@ function allowedPoster(value) {
   } catch {}
   return "";
 }
+function filmRecord(body) {
+  const id = movieId(body.movieId);
+  if (!id || typeof body.title !== "string" || !body.title.trim()) return null;
+  return {
+    movieId: id,
+    title: body.title.trim().slice(0, 500),
+    imgURL: allowedPoster(body.imgURL),
+    year: String(body.year || "").slice(0, 4),
+    genres: typeof body.genres === "string" ? body.genres.split("|").filter(Boolean).slice(0, 15) : [],
+  };
+}
 module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
   const asyncRoute = (handler) => (req, res, next) =>
     Promise.resolve(handler(req, res)).catch(next);
@@ -105,13 +116,14 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
   function render(req, res, state = {}) {
     res.set("Cache-Control", "private, no-store");
     const pageTitle =
-      { list: "My list", shared: "Shared list" }[state.page] || "Discover";
+      { list: "My list", shared: "Shared list", watchlist: "Watchlist" }[state.page] || "Discover";
     res.render("screening-room", {
       pageTitle,
       state: {
         page: "discover",
         userId: req.user ? String(req.user._id) : null,
-        library: savedFilms(req.user),
+        library: savedFilms(req.user?.movieIds),
+        watchlist: savedFilms(req.user?.watchlist),
         query: typeof req.query.q === "string" ? req.query.q.slice(0, 200) : "",
         ...state,
       },
@@ -120,11 +132,13 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
   app.get("/api/session", (req, res) => {
     res.set("Cache-Control", "private, no-store").json({
       userId: req.user ? String(req.user._id) : null,
-      library: savedFilms(req.user),
+      library: savedFilms(req.user?.movieIds),
+      watchlist: savedFilms(req.user?.watchlist),
     });
   });
   app.get("/", (req, res) => render(req, res));
   app.get("/loggedin", requireUser, (req, res) => render(req, res));
+  app.get("/watchlist", requireUser, (req, res) => render(req, res, { page: "watchlist" }));
   app.get("/moviepage", (req, res) => {
     const id = movieId(req.query.movie_id);
     if (!id) return res.redirect("/");
@@ -142,7 +156,7 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
           ? await User.findById(id).select("movieIds")
           : null;
         if (!owner) return res.status(404).send("List not found.");
-        render(req, res, { page: "shared", entries: savedFilms(owner), sort });
+        render(req, res, { page: "shared", entries: savedFilms(owner.movieIds), sort });
       }),
     );
   }
@@ -232,37 +246,50 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
       res.json(owner?.movieIds || []);
     }),
   );
+  app.put("/api/watchlist/:id", requireApiUser, asyncRoute(async (req, res) => {
+    const id = movieId(req.params.id);
+    const film = filmRecord({ ...req.body, movieId: id });
+    if (!film) return res.status(400).json({ message: "Invalid film." });
+    const owner = { _id: req.user._id, "movieIds.movieId": { $ne: id } };
+    const result = await User.updateOne(
+      { ...owner, "watchlist.movieId": { $ne: id } },
+      { $push: { watchlist: film } },
+    );
+    if (!result.matchedCount && !(await User.exists(owner))) {
+      return res.status(409).json({ message: "This film is already in your rated list." });
+    }
+    res.sendStatus(204);
+  }));
+  app.delete("/api/watchlist/:id", requireApiUser, asyncRoute(async (req, res) => {
+    const id = movieId(req.params.id);
+    if (!id) return res.status(400).json({ message: "Invalid film." });
+    await User.updateOne({ _id: req.user._id }, { $pull: { watchlist: { movieId: id } } });
+    res.sendStatus(204);
+  }));
   app.post(
     "/save-movie-score",
     requireApiUser,
     asyncRoute(async (req, res) => {
-      const { title, score, imgURL, year, genres } = req.body;
-      const id = movieId(req.body.movieId);
+      const film = filmRecord(req.body);
+      const { score } = req.body;
       const rating = typeof score === "string" ? Number(score) : score;
       if (
-        !id ||
-        typeof title !== "string" ||
-        !title.trim() ||
+        !film ||
         !Number.isInteger(rating) || rating < 1 || rating > 10
       ) {
         return res.status(400).json({ message: "Invalid film or rating." });
       }
-      const film = {
-        movieId: id,
-        score: rating,
-        title: title.slice(0, 500),
-        imgURL: allowedPoster(imgURL),
-        year: String(year || "").slice(0, 4),
-        genres:
-          typeof genres === "string"
-            ? genres.split("|").filter(Boolean).slice(0, 15)
-            : [],
-      };
+      const id = film.movieId;
       // One atomic update per user prevents duplicate entries when two saves overlap.
       const oldEntries = { $ifNull: ["$movieIds", []] };
       await User.updateOne({ _id: req.user._id }, [
         {
           $set: {
+            watchlist: { $filter: {
+              input: { $ifNull: ["$watchlist", []] },
+              as: "film",
+              cond: { $ne: ["$$film.movieId", id] },
+            } },
             movieIds: {
               $cond: [
                 { $in: [id, { $ifNull: ["$movieIds.movieId", []] }] },
@@ -284,7 +311,7 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
                     oldEntries,
                     {
                       $literal: [
-                        { ...film, _id: new mongoose.Types.ObjectId() },
+                        { ...film, score: rating, _id: new mongoose.Types.ObjectId() },
                       ],
                     },
                   ],
