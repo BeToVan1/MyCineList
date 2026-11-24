@@ -238,13 +238,12 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
     asyncRoute(async (req, res) => {
       const { title, score, imgURL, year, genres } = req.body;
       const id = movieId(req.body.movieId);
-      const rating = score === "" || score == null ? null : Number(score);
+      const rating = typeof score === "string" ? Number(score) : score;
       if (
         !id ||
         typeof title !== "string" ||
         !title.trim() ||
-        (rating !== null &&
-          (!Number.isInteger(rating) || rating < 1 || rating > 10))
+        !Number.isInteger(rating) || rating < 1 || rating > 10
       ) {
         return res.status(400).json({ message: "Invalid film or rating." });
       }

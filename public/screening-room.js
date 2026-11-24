@@ -113,12 +113,16 @@ function requireAccount(id) {
   location.href = "/login?film=" + encodeURIComponent(id);
   return false;
 }
-async function changeLibrary(id, rating, remove = false) {
+async function hasAccount(id) {
   if (!(await sessionReady)) {
     notify("Could not load your account. Reload the page to try again.");
-    return;
+    return false;
   }
-  if (!requireAccount(id) || busy.has(id)) return;
+  return requireAccount(id);
+}
+async function changeLibrary(id, rating, remove = false) {
+  if (!(await hasAccount(id)) || busy.has(id)) return;
+  const wasSaved = Boolean(saved(id));
   const f = byId.get(id);
   busy.add(id);
   try {
@@ -145,7 +149,7 @@ async function changeLibrary(id, rating, remove = false) {
     notify(
       remove
         ? "Removed from my list"
-        : rating
+        : wasSaved
           ? "Rating saved"
           : "Added to my list",
     );
@@ -158,29 +162,31 @@ async function changeLibrary(id, rating, remove = false) {
   }
 }
 async function toggle(id) {
-  await sessionReady;
-  if (busy.has(id)) return;
+  if (!(await hasAccount(id)) || busy.has(id)) return;
   const entry = saved(id);
+  const title = byId.get(id).title;
+  const dialog = $(entry ? "confirm-remove" : "rate-film");
+  if (dialog.open) return;
   if (entry) {
-    const dialog = $("confirm-remove");
-    if (dialog.open) return;
-    const title = byId.get(id).title;
     $("remove-message").textContent = entry.rating
       ? `Removing “${title}” will also delete your ${entry.rating}/10 rating.`
       : `“${title}” will be removed from your list.`;
-    dialog.returnValue = "";
-    const closed = new Promise((resolve) =>
-      dialog.addEventListener("close", resolve, { once: true }),
-    );
-    dialog.showModal();
-    await closed;
-    if (dialog.returnValue !== "remove") return;
+  } else {
+    $("rate-message").textContent = title;
+    dialog.querySelector("form").reset();
   }
-  return changeLibrary(id, null, Boolean(entry));
+  dialog.returnValue = "";
+  const closed = new Promise((resolve) =>
+    dialog.addEventListener("close", resolve, { once: true }),
+  );
+  dialog.showModal();
+  await closed;
+  if (entry && dialog.returnValue === "remove") return changeLibrary(id, null, true);
+  if (!entry && dialog.returnValue === "save") {
+    return changeLibrary(id, Number(dialog.querySelector("form").elements.score.value));
+  }
 }
-function setRating(id, value) {
-  return changeLibrary(id, value ? Number(value) : null);
-}
+$("cancel-rating").onclick = () => $("rate-film").close();
 function poster(f) {
   return f.poster
     ? '<img loading="lazy" width="400" height="600" src="' +
@@ -222,14 +228,14 @@ function card(f, entry, isShared) {
     '</a></h3><div class="card-meta"><span>' +
     [f.year, f.genres[0]].filter(Boolean).map(safe).join(" · ") +
     '</span><span class="score" title="' +
-    (entry?.rating
+    (entry
       ? isShared
         ? "Shared list rating"
         : "Your rating"
       : "TMDB community score") +
     '"><span class="star" aria-hidden="true">★</span> ' +
-    (entry?.rating
-      ? entry.rating + "/10"
+    (entry
+      ? (entry.rating ? entry.rating + "/10" : "Unrated")
       : f.score
         ? f.score.toFixed(1)
         : "—") +
@@ -455,12 +461,13 @@ function drawDetail(id, focus) {
     '</div><div class="credits"><b>TMDB score</b> ' +
     (f.score ? f.score.toFixed(1) : "—") +
     " / 10</div>" +
-    '<label class="rate">Your rating <select id="rating" class="sort"><option value="">Unrated</option>' +
+    (entry ? '<label class="rate">Your rating <select id="rating" class="sort"><option value="" disabled>Choose a rating</option>' +
     Array.from(
       { length: 10 },
       (_, i) => '<option value="' + (i + 1) + '">' + (i + 1) + " / 10</option>",
     ).join("") +
-    '</select></label><div class="actions"><button id="detail-save" class="button red">' +
+    '</select></label>' : "") +
+    '<div class="actions"><button id="detail-save" class="button red">' +
     icon(entry ? "check" : "plus") +
     (entry ? "Remove from list" : "Add to my list") +
     "</button>" +
@@ -470,7 +477,7 @@ function drawDetail(id, focus) {
         '">Watch trailer</a>'
       : "") +
     "</div></div></div>";
-  $("rating").value = entry?.rating || "";
+  if (entry) $("rating").value = entry.rating || "";
   if (focus) $(focus)?.focus();
 }
 
@@ -596,7 +603,7 @@ document.addEventListener("click", async (event) => {
   }
 });
 document.addEventListener("change", (e) => {
-  if (e.target.id === "rating") setRating(selected, e.target.value);
+  if (e.target.id === "rating") changeLibrary(selected, Number(e.target.value));
   if (e.target.id === "sort") {
     sort = e.target.value;
     render();

@@ -32,7 +32,25 @@
 </main>
 <footer class="shell"><span class="footer-brand">MyCineList</span><span>Film data and images from <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">TMDB</a></span></footer>
 <dialog id="detail" aria-labelledby="detail-title"><div id="detail-content"></div></dialog>
-<dialog id="confirm-remove" aria-labelledby="remove-title" aria-describedby="remove-message">
+<dialog id="rate-film" class="list-dialog" aria-labelledby="rate-title" aria-describedby="rate-message">
+  <form method="dialog">
+    <h2 id="rate-title">Rate this film</h2>
+    <p id="rate-message"></p>
+    <fieldset class="rating-picker">
+      <legend>Your rating out of 10</legend>
+      <div class="rating-options">
+        <% for (let score = 1; score <= 10; score++) { %>
+          <label><input type="radio" name="score" value="<%= score %>" required><span><%= score %></span></label>
+        <% } %>
+      </div>
+    </fieldset>
+    <div class="actions">
+      <button type="button" class="button outline" id="cancel-rating">Cancel</button>
+      <button class="button red" value="save">Save to my list</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="confirm-remove" class="list-dialog" aria-labelledby="remove-title" aria-describedby="remove-message">
   <form method="dialog">
     <h2 id="remove-title">Remove film from your list?</h2>
     <p id="remove-message"></p>
