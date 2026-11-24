@@ -1,5 +1,5 @@
 <header><div class="shell mast">
-  <a href="/" class="brand" aria-label="MyCineList home"><span class="ticket" aria-hidden="true"><i></i><i></i><i></i></span>MyCineList</a>
+  <a href="/" class="brand" aria-label="MyCineList home"><span class="ticket" aria-hidden="true"><i></i><i></i><i></i></span><%- include('wordmark') %></a>
   <% const page = typeof currentPage === 'undefined' ? '' : currentPage; %>
   <nav aria-label="Main navigation">
     <a href="<%= signedIn ? '/loggedin' : '/' %>" id="nav-discover" <% if (page === 'discover') { %>aria-current="page"<% } %>>Discover</a>

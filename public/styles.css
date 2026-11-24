@@ -118,11 +118,13 @@ header {
 }
 .brand {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 11px;
-  font: 2.18rem/1 var(--serif);
-  letter-spacing: -1.6px;
-  white-space: nowrap;
+  font-size: 2.18rem;
+}
+.brand > * {
+  flex: none;
 }
 .ticket {
   width: 32px;
