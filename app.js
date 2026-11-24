@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const ejs = require("ejs");
 const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
@@ -14,25 +13,59 @@ const MongoStore = require("connect-mongo");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Keep existing shared links and bookmarks working on the original host.
+if (process.env.RENDER_EXTERNAL_HOSTNAME === 'mycinelist.onrender.com') {
+    const newOrigin = 'https://mycinelist-cyan.vercel.app';
+    app.use((req, res) => {
+        // An OAuth code issued to the old callback belongs to that origin.
+        if (req.path === '/auth/google/MyCineList') return res.redirect(302, newOrigin + '/auth/google');
+        if (req.method === 'GET' || req.method === 'HEAD') return res.redirect(302, newOrigin + req.originalUrl);
+        return res.redirect(303, newOrigin + (req.path === '/register' ? '/register' : '/login'));
+    });
+}
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.use(session({
-    secret: "Our little secret.",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI })
-}));
+// Reuse a single MongoDB pool for account data and sessions on each instance.
+let sessionMiddleware;
+function getSessionMiddleware() {
+    if (!sessionMiddleware) {
+        sessionMiddleware = mongoose.connect(process.env.MONGO_URI, {
+            maxPoolSize: 5,
+            serverSelectionTimeoutMS: 8000
+        }).then(() => session({
+            secret: process.env.SESSION_SECRET,
+            resave: false,
+            saveUninitialized: false,
+            proxy: process.env.VERCEL === '1',
+            cookie: { httpOnly: true, sameSite: 'lax', secure: process.env.VERCEL === '1' },
+            store: MongoStore.create({ client: mongoose.connection.getClient(),
+                dbName: mongoose.connection.name })
+        })).catch(error => {
+            sessionMiddleware = null;
+            throw error;
+        });
+    }
+    return sessionMiddleware;
+}
+app.use((req, res, next) => {
+    if (req.method === 'GET') {
+        if (req.path === '/api/catalog' || /^\/api\/films\/\d+$/.test(req.path)) return next();
+        if (req.path === '/api/session' && !req.headers.cookie) {
+            return res.set('Cache-Control', 'private, no-store').json({ userId: null, library: [] });
+        }
+    }
+    getSessionMiddleware().then(middleware => middleware(req, res, next)).catch(next);
+});
 
 app.use(passport.initialize());
-app.use(passport.session());
-
-//connects to db
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true });
-
+const restoreSession = passport.session();
+app.use((req, res, next) => req.session ? restoreSession(req, res, next) : next());
 
 //schema for user
 const userSchema = new mongoose.Schema({
@@ -98,20 +131,9 @@ app.get('/auth/google/MyCineList',
     }));
 
 
-// Keep the existing Render integration working while allowing a managed token.
 async function tmdb(path, params) {
-        const options = {
-            method: 'GET',
-            headers: {
-                accept: 'application/json',
-                Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhMTE5MzkyZDJjNDRlNWYzYjI3MGY1YWRlNWFjMjIxZCIsInN1YiI6IjY0ZmFkYWM2ZmZjOWRlMDEzOGViYWZhZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.CXi3K75a6AwYUhEm8yG_QtO2colywujc7Mi3MymUozw'
-            }
-        };
-  
-
-    if (process.env.TMDB_READ_TOKEN) {
-        options.headers.Authorization = 'Bearer ' + process.env.TMDB_READ_TOKEN;
-    }
+    const token = (process.env.TMDB_READ_TOKEN || '').trim().replace(/^Bearer\s+/i, '');
+    const options = { headers: { accept: 'application/json', Authorization: 'Bearer ' + token } };
     const url = new URL('https://api.themoviedb.org/3/' + path);
     url.search = new URLSearchParams({language: 'en-US', ...params});
     const response = await fetch(url, {...options, signal: AbortSignal.timeout(10000)});
@@ -125,4 +147,7 @@ async function tmdb(path, params) {
 
 require('./screening-room')(app, {User, passport, tmdb});
 
-app.listen(PORT, () => console.log('MyCineList listening on port ' + PORT));
+module.exports = app;
+if (require.main === module) {
+    app.listen(PORT, () => console.log('MyCineList listening on port ' + PORT));
+}

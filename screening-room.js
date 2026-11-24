@@ -117,6 +117,12 @@ module.exports = function registerScreeningRoom(app, { User, passport, tmdb }) {
       },
     });
   }
+  app.get("/api/session", (req, res) => {
+    res.set("Cache-Control", "private, no-store").json({
+      userId: req.user ? String(req.user._id) : null,
+      library: savedFilms(req.user),
+    });
+  });
   app.get("/", (req, res) => render(req, res));
   app.get("/loggedin", requireUser, (req, res) => render(req, res));
   app.get("/moviepage", (req, res) => {

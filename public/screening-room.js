@@ -114,6 +114,10 @@ function requireAccount(id) {
   return false;
 }
 async function changeLibrary(id, rating, remove = false) {
+  if (!(await sessionReady)) {
+    notify("Could not load your account. Reload the page to try again.");
+    return;
+  }
   if (!requireAccount(id) || busy.has(id)) return;
   const f = byId.get(id);
   busy.add(id);
@@ -153,7 +157,8 @@ async function changeLibrary(id, rating, remove = false) {
     if (selected === id && $("detail").open) drawDetail(id);
   }
 }
-function toggle(id) {
+async function toggle(id) {
+  await sessionReady;
   return changeLibrary(id, null, Boolean(saved(id)));
 }
 function setRating(id, value) {
@@ -604,6 +609,27 @@ $("detail").addEventListener("close", () => {
       ?.focus({ preventScroll: true });
   selected = null;
 });
-$("query").value = state.query;
+async function loadSession() {
+  try {
+    const response = await fetch("/api/session", { cache: "no-store" });
+    if (!response.ok) return false;
+    const account = await response.json();
+    state.userId = account.userId;
+    library = account.library;
+    registerSaved(library);
+    const link = document.querySelector(".account-link");
+    link.href = account.userId ? "/logout" : "/login";
+    link.textContent = account.userId ? "Sign out" : "Sign in";
+    render();
+    if (selected && $("detail").open && detailsLoaded.has(selected)) drawDetail(selected);
+    return true;
+  } catch {
+    return false;
+  }
+}
+const sessionReady = state.staticDiscover ? loadSession() : Promise.resolve(true);
+$("query").value = state.staticDiscover
+  ? (new URLSearchParams(location.search).get("q") || "").slice(0, 200)
+  : state.query;
 updateCatalog();
 if (state.filmId) openDetail(state.filmId);
