@@ -495,7 +495,7 @@ function render() {
     : page === "list" && !library.length
       ? '<strong>Your list is ready for its first film.</strong><p>Use the plus on a film to add your rating.</p><a href="/" class="text-link">Discover films</a>'
       : "<strong>No films to show.</strong>";
-  drawFeature();
+  if (!$("feature").hidden) drawFeature();
 }
 function drawDetail(id, focus) {
   const f = byId.get(id),
@@ -722,6 +722,7 @@ async function loadSession() {
     const link = document.querySelector(".account-link");
     link.href = account.userId ? "/logout" : "/login";
     link.textContent = account.userId ? "Sign out" : "Sign in";
+    $("nav-discover").href = account.userId ? "/loggedin" : "/";
     render();
     if (selected && $("detail").open && detailsLoaded.has(selected)) drawDetail(selected);
     return true;

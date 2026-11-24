@@ -23,6 +23,25 @@
   --red: #af3727;
   --serif: "Instrument Serif", Georgia, serif;
   --sans: "DM Sans", Arial, sans-serif;
+  background: var(--paper);
+  scrollbar-gutter: stable;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  :root {
+    view-transition-name: none;
+  }
+  main {
+    view-transition-name: page-content;
+  }
+  ::view-transition {
+    pointer-events: none;
+  }
+  ::view-transition-group(page-content) {
+    animation-duration: 150ms;
+  }
 }
 * {
   box-sizing: border-box;

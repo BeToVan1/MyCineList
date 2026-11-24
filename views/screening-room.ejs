@@ -8,14 +8,17 @@
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='2' y='8' width='36' height='24' rx='5' fill='%23bd3825'/%3E%3Cpath d='M11 14v12m7-12v12m7-12v12' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
   <script id="initial-state" type="application/json"><%- JSON.stringify(state).replace(/</g, "\\u003c") %></script>
-  <script src="/films.js" defer></script><script src="/screening-room.js" defer></script>
+  <script src="/films.js" defer></script><script src="/screening-room.js" defer blocking="render"></script>
 </head>
 <body>
 <a href="#main" class="skip">Skip to films</a>
-<%- include('header', {signedIn: Boolean(state.userId), count: state.library.length}) %>
+<% const isCollection = state.page !== 'discover';
+   const showFeature = !isCollection && !state.query;
+   const shelfTitle = state.query ? 'Search results' : isCollection ? pageTitle : 'The film shelf'; %>
+<%- include('header', {signedIn: Boolean(state.userId), count: state.library.length, currentPage: state.page}) %>
 <main class="shell" id="main" tabindex="-1">
-  <section class="feature" id="feature" aria-label="Featured film">
-    <img id="still" alt=""><div class="shade"></div>
+  <section class="feature" id="feature" aria-label="Featured film" <%= showFeature ? '' : 'hidden' %>>
+    <img id="still" alt="" <% if (showFeature) { %>src="/assets/335984-wide.webp" fetchpriority="high"<% } %>><div class="shade"></div>
     <div class="feature-copy">
       <div class="eyebrow"><span class="spark" aria-hidden="true">✦</span> In the spotlight</div>
       <h1 id="feature-title"></h1>
@@ -25,7 +28,7 @@
     <div class="pagination"><span id="slide-index">01 <em>/ 03</em></span><button id="prev" aria-label="Previous featured film" data-icon="prev"></button><button id="next" aria-label="Next featured film" data-icon="next"></button></div>
   </section>
   <section class="shelf" aria-labelledby="shelf-title">
-    <div class="section-top"><div><div id="section-kicker" class="kicker"><i></i> Curated discovery</div><h2 id="shelf-title">The film shelf<span>.</span></h2></div><div id="shelf-tools"></div></div>
+    <div class="section-top"><div><div id="section-kicker" class="kicker"><i></i> <%= isCollection ? 'Film collection' : state.query ? 'Discovery' : 'Curated discovery' %></div><h2 id="shelf-title"><%= shelfTitle %><span>.</span></h2></div><div id="shelf-tools"></div></div>
     <div class="filters"><div id="genres" role="group" aria-label="Filter by genre"></div><p id="result-count" aria-live="polite"></p></div>
     <p class="status-line" id="catalog-status" role="status"></p><button class="text-link" id="retry" hidden>Try again</button><div class="grid" id="grid"></div><div id="empty" hidden></div><button id="more" class="button more" hidden>Show more films</button>
   </section>
