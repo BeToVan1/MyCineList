@@ -53,6 +53,7 @@ function registerSaved(entries) {
 }
 let library = state.library;
 let watchlist = state.watchlist || [];
+let listsStatus = state.staticDiscover ? "loading" : "ready";
 registerSaved(library);
 registerSaved(watchlist);
 registerSaved(state.entries || []);
@@ -360,6 +361,7 @@ function render() {
     query = $("query").value.trim().toLowerCase(),
     isList = page !== "discover",
     searching = Boolean(query);
+  const isCurated = !isList && !searching && collection === "curated";
   $("feature").hidden = isList || searching;
   const activeNav = { list: "nav-list", watchlist: "nav-watchlist", discover: "nav-discover" }[page];
   for (const el of document.querySelectorAll("nav a")) {
@@ -380,7 +382,10 @@ function render() {
       ),
     );
     pool = deduplicate([...remote, ...matches]);
-  } else pool = collection === "now" ? remote : curated;
+  } else if (isCurated) {
+    const savedIds = new Set([...library, ...watchlist].map((entry) => entry.id));
+    pool = listsStatus === "ready" ? curated.filter((film) => !savedIds.has(film.id)) : [];
+  } else pool = remote;
   const options = [
     "All films",
     ...[
@@ -457,7 +462,7 @@ function render() {
   if ($("sort")) $("sort").value = sort;
   const shown =
     isList || searching || collection === "now" ? items : items.slice(0, limit);
-  $("result-count").textContent =
+  $("result-count").textContent = isCurated && listsStatus !== "ready" ? "" :
     items.length + " film" + (items.length === 1 ? "" : "s");
   $("grid").innerHTML = shown
     .map((f) =>
@@ -475,8 +480,16 @@ function render() {
   $("catalog-status").textContent = loading ? "Loading films…" : catalogError;
   $("retry").hidden = !catalogError;
   $("empty").hidden = items.length > 0 || loading || Boolean(catalogError);
+  if (isCurated && listsStatus === "loading") {
+    $("catalog-status").textContent = "Loading your film shelf…";
+    $("empty").hidden = true;
+  }
   $("empty").innerHTML = searching
     ? '<strong>No matching films</strong><p>Try another title, director, or cast member.</p><button class="text-link" id="clear">Clear search</button>'
+    : isCurated && listsStatus === "error"
+      ? '<strong>Could not load your film lists.</strong><p><a class="text-link" href="/">Reload the shelf</a></p>'
+    : isCurated
+      ? '<strong>You’ve saved every curated pick.</strong><p>Explore Now playing to find more films.</p>'
     : page === "watchlist" && !watchlist.length
       ? '<strong>Your watchlist is empty.</strong><p>Use the bookmark on a film you want to watch.</p><a class="text-link" href="/">Discover films</a>'
     : page === "list" && !library.length
@@ -698,11 +711,12 @@ $("detail").addEventListener("close", () => {
 async function loadSession() {
   try {
     const response = await fetch("/api/session", { cache: "no-store" });
-    if (!response.ok) return false;
+    if (!response.ok) throw new Error("Session unavailable");
     const account = await response.json();
     state.userId = account.userId;
     library = account.library;
     watchlist = account.watchlist || [];
+    listsStatus = "ready";
     registerSaved(library);
     registerSaved(watchlist);
     const link = document.querySelector(".account-link");
@@ -712,10 +726,18 @@ async function loadSession() {
     if (selected && $("detail").open && detailsLoaded.has(selected)) drawDetail(selected);
     return true;
   } catch {
+    listsStatus = "error";
+    render();
     return false;
   }
 }
-const sessionReady = state.staticDiscover ? loadSession() : Promise.resolve(true);
+let sessionReady = state.staticDiscover ? loadSession() : Promise.resolve(true);
+window.addEventListener("pageshow", (event) => {
+  if (!event.persisted || state.page !== "discover") return;
+  listsStatus = "loading";
+  render();
+  sessionReady = loadSession();
+});
 $("query").value = state.staticDiscover
   ? (new URLSearchParams(location.search).get("q") || "").slice(0, 200)
   : state.query;
